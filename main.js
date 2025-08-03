@@ -216,14 +216,16 @@ function renderOnboarding() {
           </ol>
         </div>
 
-        <form id="onboarding-form" class="space-y-4 mb-6">
-          <input type="text" name="name" placeholder="Dein Name" required 
+
+
+                <form id="login-form" class="space-y-4 mb-6">
+          <input type="text" name="gist_id" placeholder="Gist-ID (optional)" 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <input type="password" name="token" placeholder="GitHub Token" required 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <button type="submit" 
-                  class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
-            Neues Profil anlegen
+                  class="w-full bg-gray-400 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+            Einloggen
           </button>
         </form>
 
@@ -236,14 +238,14 @@ function renderOnboarding() {
           </div>
         </div>
 
-        <form id="login-form" class="space-y-4 mt-6">
-          <input type="text" name="gist_id" placeholder="Gist-ID (optional)" 
+        <form id="onboarding-form" class="space-y-4 mt-6 mb-6">
+          <input type="text" name="name" placeholder="Dein Name" required 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <input type="password" name="token" placeholder="GitHub Token" required 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <button type="submit" 
-                  class="w-full bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
-            Einloggen
+                  class="w-full bg-blue-400 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+            Neues Profil anlegen
           </button>
         </form>
         
@@ -257,6 +259,29 @@ function renderOnboarding() {
             <button type="button" id="auto-login-btn" 
                     class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Automatisch anmelden
+            </button>
+          </div>
+        </div>
+
+                <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500"></span>
+          </div>
+        </div>
+
+        <!-- Demo Button -->
+        <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-medium text-purple-900">App testen</h4>
+              <p class="text-sm text-purple-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
+            </div>
+            <button type="button" id="demo-btn" 
+                    class="bg-purple-400 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              Demo starten
             </button>
           </div>
         </div>
@@ -353,6 +378,32 @@ function renderOnboarding() {
       window.location.reload();
     } catch (err) {
       showNotification('Fehler: ' + err.message, 'error');
+    }
+  };
+
+  // Demo Button Event Listener
+  document.getElementById('demo-btn').onclick = async () => {
+    try {
+      // Beispieldaten laden
+      const response = await fetch('example_training_data.json');
+      if (!response.ok) {
+        throw new Error('Beispieldaten konnten nicht geladen werden');
+      }
+      const demoData = await response.json();
+      
+      // App-Daten mit Demo-Daten überschreiben
+      appData = { ...appData, ...demoData };
+      
+      // Lokale Speicherung für Demo-Modus
+      localStorage.setItem('cf_log_demo_mode', 'true');
+      localStorage.setItem('cf_log_user_name', demoData.user.name);
+      
+      // Dashboard anzeigen
+      renderDashboard();
+      
+      showNotification('Demo-Daten erfolgreich geladen!', 'success');
+    } catch (err) {
+      showNotification('Demo-Fehler: ' + err.message, 'error');
     }
   };
 }
@@ -1968,6 +2019,13 @@ function renderYearComparison() {
 async function saveData() {
   const token = localStorage.getItem('cf_log_token');
   const gistId = localStorage.getItem('cf_log_gist_id');
+  const demoMode = localStorage.getItem('cf_log_demo_mode');
+  
+  // Im Demo-Modus keine Daten speichern
+  if (demoMode === 'true') {
+    showNotification('Demo-Modus: Daten werden nicht gespeichert', 'info');
+    return;
+  }
   
   if (!token || !gistId) return;
   
@@ -1997,6 +2055,17 @@ function showNotification(message, type = 'info') {
 function logout() {
   const token = localStorage.getItem('cf_log_token');
   const gistId = localStorage.getItem('cf_log_gist_id');
+  const demoMode = localStorage.getItem('cf_log_demo_mode');
+  
+  if (demoMode === 'true') {
+    // Demo-Modus beenden
+    if (confirm('Demo-Modus beenden?')) {
+      localStorage.removeItem('cf_log_demo_mode');
+      localStorage.removeItem('cf_log_user_name');
+      window.location.reload();
+    }
+    return;
+  }
   
   let message = 'Möchtest du dich wirklich abmelden?\n\n';
   message += '⚠️ Wichtiger Hinweis:\n';
@@ -2017,6 +2086,13 @@ function logout() {
 async function main() {
   const token = localStorage.getItem('cf_log_token');
   const gistId = localStorage.getItem('cf_log_gist_id');
+  const demoMode = localStorage.getItem('cf_log_demo_mode');
+  
+  // Demo-Modus prüfen
+  if (demoMode === 'true') {
+    renderDashboard();
+    return;
+  }
   
   if (!token || !gistId) {
     renderOnboarding();

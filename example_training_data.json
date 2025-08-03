@@ -1,0 +1,662 @@
+{
+  "user": {
+    "name": "Max Muskelmann",
+    "created": "2025-01-01"
+  },
+  "settings": {
+    "defaultExercises": [
+      "Back Squat",
+      "Front Squat", 
+      "Deadlift",
+      "Strict Press",
+      "Bench Press",
+      "Clean",
+      "Snatch",
+      "Pull-ups",
+      "Push-ups",
+      "Burpees"
+    ],
+    "theme": "light"
+  },
+  "exercises": [
+    {
+      "id": "1",
+      "exercise": "Back Squat",
+      "date": "2025-01-15",
+      "sets": [
+        {"reps": 5, "weight": 140, "notes": ""},
+        {"reps": 5, "weight": 145, "notes": ""},
+        {"reps": 5, "weight": 150, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "2", 
+      "exercise": "Back Squat",
+      "date": "2025-02-20",
+      "sets": [
+        {"reps": 1, "weight": 155, "notes": ""}
+      ],
+      "notes": "Neuer 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "3",
+      "exercise": "Deadlift",
+      "date": "2025-03-10",
+      "sets": [
+        {"reps": 5, "weight": 150, "notes": ""},
+        {"reps": 5, "weight": 155, "notes": ""},
+        {"reps": 5, "weight": 160, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "4",
+      "exercise": "Strict Press",
+      "date": "2025-04-05",
+      "sets": [
+        {"reps": 3, "weight": 65, "notes": ""},
+        {"reps": 3, "weight": 67.5, "notes": ""},
+        {"reps": 3, "weight": 70, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "5",
+      "exercise": "Clean",
+      "date": "2025-05-12",
+      "sets": [
+        {"reps": 2, "weight": 90, "notes": ""},
+        {"reps": 2, "weight": 95, "notes": ""},
+        {"reps": 2, "weight": 100, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "6",
+      "exercise": "Bench Press",
+      "date": "2025-06-15",
+      "sets": [
+        {"reps": 5, "weight": 120, "notes": ""},
+        {"reps": 5, "weight": 125, "notes": ""},
+        {"reps": 5, "weight": 130, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "7",
+      "exercise": "Bench Press",
+      "date": "2025-07-20",
+      "sets": [
+        {"reps": 1, "weight": 135, "notes": ""}
+      ],
+      "notes": "1RM erreicht!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "8",
+      "exercise": "Front Squat",
+      "date": "2025-08-10",
+      "sets": [
+        {"reps": 3, "weight": 125, "notes": ""},
+        {"reps": 3, "weight": 130, "notes": ""},
+        {"reps": 3, "weight": 135, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "9",
+      "exercise": "Snatch",
+      "date": "2025-09-05",
+      "sets": [
+        {"reps": 1, "weight": 90, "notes": ""}
+      ],
+      "notes": "Snatch 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "10",
+      "exercise": "Pull-ups",
+      "date": "2025-10-12",
+      "sets": [
+        {"reps": 20, "weight": 0, "notes": ""},
+        {"reps": 15, "weight": 0, "notes": ""},
+        {"reps": 12, "weight": 0, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "11",
+      "exercise": "Back Squat",
+      "date": "2024-11-20",
+      "sets": [
+        {"reps": 5, "weight": 135, "notes": ""},
+        {"reps": 5, "weight": 140, "notes": ""},
+        {"reps": 5, "weight": 145, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "12",
+      "exercise": "Deadlift",
+      "date": "2024-12-15",
+      "sets": [
+        {"reps": 5, "weight": 145, "notes": ""},
+        {"reps": 5, "weight": 150, "notes": ""},
+        {"reps": 5, "weight": 155, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "13",
+      "exercise": "Strict Press",
+      "date": "2024-01-10",
+      "sets": [
+        {"reps": 5, "weight": 55, "notes": ""},
+        {"reps": 5, "weight": 57.5, "notes": ""},
+        {"reps": 5, "weight": 60, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "14",
+      "exercise": "Clean",
+      "date": "2024-02-25",
+      "sets": [
+        {"reps": 3, "weight": 80, "notes": ""},
+        {"reps": 3, "weight": 85, "notes": ""},
+        {"reps": 3, "weight": 90, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "15",
+      "exercise": "Bench Press",
+      "date": "2024-03-15",
+      "sets": [
+        {"reps": 5, "weight": 110, "notes": ""},
+        {"reps": 5, "weight": 115, "notes": ""},
+        {"reps": 5, "weight": 120, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "16",
+      "exercise": "Front Squat",
+      "date": "2024-04-20",
+      "sets": [
+        {"reps": 3, "weight": 115, "notes": ""},
+        {"reps": 3, "weight": 120, "notes": ""},
+        {"reps": 3, "weight": 125, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "17",
+      "exercise": "Back Squat",
+      "date": "2023-05-10",
+      "sets": [
+        {"reps": 5, "weight": 125, "notes": ""},
+        {"reps": 5, "weight": 130, "notes": ""},
+        {"reps": 5, "weight": 135, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "18",
+      "exercise": "Deadlift",
+      "date": "2023-06-15",
+      "sets": [
+        {"reps": 5, "weight": 140, "notes": ""},
+        {"reps": 5, "weight": 145, "notes": ""},
+        {"reps": 5, "weight": 150, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "19",
+      "exercise": "Strict Press",
+      "date": "2023-07-20",
+      "sets": [
+        {"reps": 5, "weight": 50, "notes": ""},
+        {"reps": 5, "weight": 52.5, "notes": ""},
+        {"reps": 5, "weight": 55, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "20",
+      "exercise": "Bench Press",
+      "date": "2023-08-25",
+      "sets": [
+        {"reps": 5, "weight": 100, "notes": ""},
+        {"reps": 5, "weight": 105, "notes": ""},
+        {"reps": 5, "weight": 110, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "21",
+      "exercise": "Front Squat",
+      "date": "2023-09-10",
+      "sets": [
+        {"reps": 3, "weight": 105, "notes": ""},
+        {"reps": 3, "weight": 110, "notes": ""},
+        {"reps": 3, "weight": 115, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "22",
+      "exercise": "Clean",
+      "date": "2023-10-05",
+      "sets": [
+        {"reps": 3, "weight": 75, "notes": ""},
+        {"reps": 3, "weight": 80, "notes": ""},
+        {"reps": 3, "weight": 85, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "23",
+      "exercise": "Snatch",
+      "date": "2023-11-12",
+      "sets": [
+        {"reps": 1, "weight": 75, "notes": ""},
+        {"reps": 1, "weight": 80, "notes": ""},
+        {"reps": 1, "weight": 85, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": false
+    },
+    {
+      "id": "24",
+      "exercise": "Pull-ups",
+      "date": "2023-12-20",
+      "sets": [
+        {"reps": 15, "weight": 0, "notes": ""},
+        {"reps": 12, "weight": 0, "notes": ""},
+        {"reps": 10, "weight": 0, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "25",
+      "exercise": "Back Squat",
+      "date": "2022-01-15",
+      "sets": [
+        {"reps": 5, "weight": 115, "notes": ""},
+        {"reps": 5, "weight": 120, "notes": ""},
+        {"reps": 5, "weight": 125, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "26",
+      "exercise": "Deadlift",
+      "date": "2022-02-20",
+      "sets": [
+        {"reps": 5, "weight": 135, "notes": ""},
+        {"reps": 5, "weight": 140, "notes": ""},
+        {"reps": 5, "weight": 145, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "27",
+      "exercise": "Strict Press",
+      "date": "2022-03-25",
+      "sets": [
+        {"reps": 5, "weight": 45, "notes": ""},
+        {"reps": 5, "weight": 47.5, "notes": ""},
+        {"reps": 5, "weight": 50, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "28",
+      "exercise": "Bench Press",
+      "date": "2022-04-10",
+      "sets": [
+        {"reps": 5, "weight": 90, "notes": ""},
+        {"reps": 5, "weight": 95, "notes": ""},
+        {"reps": 5, "weight": 100, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "29",
+      "exercise": "Front Squat",
+      "date": "2022-05-15",
+      "sets": [
+        {"reps": 3, "weight": 95, "notes": ""},
+        {"reps": 3, "weight": 100, "notes": ""},
+        {"reps": 3, "weight": 105, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "30",
+      "exercise": "Clean",
+      "date": "2022-06-20",
+      "sets": [
+        {"reps": 3, "weight": 70, "notes": ""},
+        {"reps": 3, "weight": 75, "notes": ""},
+        {"reps": 3, "weight": 80, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "31",
+      "exercise": "Snatch",
+      "date": "2022-07-25",
+      "sets": [
+        {"reps": 1, "weight": 70, "notes": ""},
+        {"reps": 1, "weight": 75, "notes": ""},
+        {"reps": 1, "weight": 80, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "32",
+      "exercise": "Pull-ups",
+      "date": "2022-08-30",
+      "sets": [
+        {"reps": 12, "weight": 0, "notes": ""},
+        {"reps": 10, "weight": 0, "notes": ""},
+        {"reps": 8, "weight": 0, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "33",
+      "exercise": "Back Squat",
+      "date": "2021-09-05",
+      "sets": [
+        {"reps": 5, "weight": 105, "notes": ""},
+        {"reps": 5, "weight": 110, "notes": ""},
+        {"reps": 5, "weight": 115, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "34",
+      "exercise": "Deadlift",
+      "date": "2021-10-10",
+      "sets": [
+        {"reps": 5, "weight": 130, "notes": ""},
+        {"reps": 5, "weight": 135, "notes": ""},
+        {"reps": 5, "weight": 140, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "35",
+      "exercise": "Strict Press",
+      "date": "2021-11-15",
+      "sets": [
+        {"reps": 5, "weight": 40, "notes": ""},
+        {"reps": 5, "weight": 42.5, "notes": ""},
+        {"reps": 5, "weight": 45, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "36",
+      "exercise": "Bench Press",
+      "date": "2021-12-20",
+      "sets": [
+        {"reps": 5, "weight": 85, "notes": ""},
+        {"reps": 5, "weight": 90, "notes": ""},
+        {"reps": 5, "weight": 95, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "37",
+      "exercise": "Front Squat",
+      "date": "2021-01-25",
+      "sets": [
+        {"reps": 3, "weight": 85, "notes": ""},
+        {"reps": 3, "weight": 90, "notes": ""},
+        {"reps": 3, "weight": 95, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "38",
+      "exercise": "Clean",
+      "date": "2021-02-28",
+      "sets": [
+        {"reps": 3, "weight": 65, "notes": ""},
+        {"reps": 3, "weight": 70, "notes": ""},
+        {"reps": 3, "weight": 75, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "39",
+      "exercise": "Snatch",
+      "date": "2021-03-15",
+      "sets": [
+        {"reps": 1, "weight": 65, "notes": ""},
+        {"reps": 1, "weight": 70, "notes": ""},
+        {"reps": 1, "weight": 75, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "40",
+      "exercise": "Pull-ups",
+      "date": "2021-04-20",
+      "sets": [
+        {"reps": 10, "weight": 0, "notes": ""},
+        {"reps": 8, "weight": 0, "notes": ""},
+        {"reps": 6, "weight": 0, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "41",
+      "exercise": "Back Squat",
+      "date": "2024-06-01",
+      "sets": [
+        {"reps": 1, "weight": 150, "notes": ""}
+      ],
+      "notes": "Back Squat 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "42",
+      "exercise": "Deadlift",
+      "date": "2024-07-10",
+      "sets": [
+        {"reps": 1, "weight": 160, "notes": ""}
+      ],
+      "notes": "Deadlift 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "43",
+      "exercise": "Clean",
+      "date": "2024-08-15",
+      "sets": [
+        {"reps": 1, "weight": 95, "notes": ""}
+      ],
+      "notes": "Clean 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "44",
+      "exercise": "Strict Press",
+      "date": "2023-01-20",
+      "sets": [
+        {"reps": 1, "weight": 60, "notes": ""}
+      ],
+      "notes": "Strict Press 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "45",
+      "exercise": "Front Squat",
+      "date": "2023-02-25",
+      "sets": [
+        {"reps": 1, "weight": 120, "notes": ""}
+      ],
+      "notes": "Front Squat 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "46",
+      "exercise": "Bench Press",
+      "date": "2022-09-05",
+      "sets": [
+        {"reps": 1, "weight": 110, "notes": ""}
+      ],
+      "notes": "Bench Press 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "47",
+      "exercise": "Snatch",
+      "date": "2022-10-10",
+      "sets": [
+        {"reps": 1, "weight": 80, "notes": ""}
+      ],
+      "notes": "Snatch 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "48",
+      "exercise": "Back Squat",
+      "date": "2021-05-15",
+      "sets": [
+        {"reps": 1, "weight": 120, "notes": ""}
+      ],
+      "notes": "Erster Back Squat 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "49",
+      "exercise": "Deadlift",
+      "date": "2021-06-20",
+      "sets": [
+        {"reps": 1, "weight": 145, "notes": ""}
+      ],
+      "notes": "Erster Deadlift 1RM!",
+      "is1RM": true,
+      "inWorkout": false
+    },
+    {
+      "id": "50",
+      "exercise": "Burpees",
+      "date": "2023-11-15",
+      "sets": [
+        {"reps": 20, "weight": 0, "notes": ""},
+        {"reps": 15, "weight": 0, "notes": ""},
+        {"reps": 10, "weight": 0, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    },
+    {
+      "id": "51",
+      "exercise": "Push-ups",
+      "date": "2023-12-20",
+      "sets": [
+        {"reps": 25, "weight": 0, "notes": ""},
+        {"reps": 20, "weight": 0, "notes": ""},
+        {"reps": 15, "weight": 0, "notes": ""}
+      ],
+      "notes": "",
+      "is1RM": false,
+      "inWorkout": true
+    }
+  ]
+} 
