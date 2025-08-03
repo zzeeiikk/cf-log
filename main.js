@@ -86,6 +86,63 @@ function formatDate(date) {
   return `${day}.${month}.${year}`;
 }
 
+// Neue Funktion zur intelligenten Darstellung von Sets
+function formatSetsIntelligently(sets) {
+  if (sets.length === 0) return '';
+  
+  // Gruppiere gleiche Sets
+  const groupedSets = [];
+  let currentGroup = { reps: sets[0].reps, weight: sets[0].weight, count: 1 };
+  
+  for (let i = 1; i < sets.length; i++) {
+    const set = sets[i];
+    if (set.reps === currentGroup.reps && set.weight === currentGroup.weight) {
+      currentGroup.count++;
+    } else {
+      groupedSets.push(currentGroup);
+      currentGroup = { reps: set.reps, weight: set.weight, count: 1 };
+    }
+  }
+  groupedSets.push(currentGroup);
+  
+  // Prüfe ob alle Sets die gleiche Anzahl Wiederholungen haben
+  const allSameReps = groupedSets.every(group => group.reps === groupedSets[0].reps);
+  
+  if (allSameReps && groupedSets.length > 1) {
+    // Alle Sets haben gleiche Wiederholungen - zeige Anzahl der Sets und Gewichte an
+    const reps = groupedSets[0].reps;
+    const totalSets = groupedSets.reduce((sum, group) => sum + group.count, 0);
+    const weightGroups = groupedSets.map(group => {
+      if (group.count === 1) {
+        return `${group.weight}kg`;
+      } else {
+        return `${group.count}×${group.weight}kg`;
+      }
+    });
+    return `${totalSets}×${reps} (${weightGroups.join(' ')})`;
+  } else {
+    // Prüfe ob alle Sets das gleiche Gewicht haben
+    const allSameWeight = groupedSets.every(group => group.weight === groupedSets[0].weight);
+    
+    if (allSameWeight && groupedSets.length === 1 && groupedSets[0].count > 1) {
+      // Alle Sets haben gleiches Gewicht - zeige Anzahl der Sets und Wiederholungen an
+      const weight = groupedSets[0].weight;
+      const reps = groupedSets[0].reps;
+      const totalSets = groupedSets[0].count;
+      return `${totalSets}×${reps} (${weight}kg)`;
+    } else {
+      // Normale Darstellung für gemischte Wiederholungen
+      return groupedSets.map(group => {
+        if (group.count === 1) {
+          return `${group.reps}×${group.weight}kg`;
+        } else {
+          return `${group.count}×${group.reps}×${group.weight}kg`;
+        }
+      }).join(' ');
+    }
+  }
+}
+
 // GitHub Gist Functions
 async function createGist(token, data) {
   const res = await fetch(`${GITHUB_API}/gists`, {
@@ -381,7 +438,7 @@ function renderDashboard() {
                   </div>
                 </div>
               </div>
-              <div id="exercise-list" class="divide-y divide-gray-200">
+              <div id="exercise-list" class="divide-y divide-gray-500">
                 ${currentView === 'summary' ? renderExerciseSummary() : 
                   currentView === 'training' ? renderTrainingMode() : renderExerciseList()}
               </div>
@@ -609,7 +666,7 @@ function renderExerciseSummary() {
                     ${training.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">Workout</span>' : ''}
                   </div>
                   <div class="text-xs text-gray-600 max-w-32 truncate">
-                    ${training.sets.map(set => `${set.reps}×${set.weight}kg`).join(', ')}
+                    ${formatSetsIntelligently(training.sets)}
                   </div>
                 </div>
               `).join('')}
@@ -696,8 +753,8 @@ function renderTrainingMode() {
                   ${training.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">W</span>' : ''}
                 </div>
                 <div class="flex items-center space-x-2">
-                  <div class="text-gray-600 font-mono">
-                    ${training.sets.map(set => `${set.reps}×${set.weight}kg`).join(' ')}
+                  <div class="text-gray-600 font-mono text-right">
+                    ${formatSetsIntelligently(training.sets)}
                   </div>
                   <div class="opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onclick="showTrainingContextMenu('${training.id}', event)" 
@@ -713,7 +770,7 @@ function renderTrainingMode() {
         ${exercises.length > 2 ? `
           <div class="mt-3 pt-3 border-t border-gray-200">
             <button onclick="toggleTrainingHistory('${exerciseName}')" 
-                    class="w-full text-left text-blue-600 hover:text-blue-800 font-medium flex items-center justify-between transition-colors">
+                    class="w-full text-left text-gray-500 hover:text-blue-600 text-sm flex items-center justify-between transition-colors">
               <span>Alle ${exercises.length} Trainings anzeigen</span>
               <svg id="toggle-icon-${exerciseName.replace(/\s+/g, '-')}" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -737,7 +794,7 @@ function renderTrainingMode() {
                   </div>
                   <div class="flex items-center space-x-2">
                     <div class="text-gray-600 font-mono">
-                      ${training.sets.map(set => `${set.reps}×${set.weight}kg`).join(' ')}
+                      ${formatSetsIntelligently(training.sets)}
                     </div>
                     <div class="opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onclick="showTrainingContextMenu('${training.id}', event)" 
