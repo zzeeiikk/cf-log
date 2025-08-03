@@ -249,28 +249,7 @@ function renderOnboarding() {
           </button>
         </form>
         
-        <!-- Auto-Login Button wenn Daten verfügbar -->
-        <div id="auto-login-section" class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200 hidden">
-          <div class="flex items-center justify-between">
-            <div>
-              <h4 class="font-medium text-green-900">Gespeicherte Anmeldedaten gefunden</h4>
-              <p class="text-sm text-green-700 mt-1">Du kannst dich automatisch anmelden</p>
-            </div>
-            <button type="button" id="auto-login-btn" 
-                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-              Automatisch anmelden
-            </button>
-          </div>
-        </div>
 
-                <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500"></span>
-          </div>
-        </div>
 
         <!-- Demo Button -->
         <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
@@ -280,7 +259,7 @@ function renderOnboarding() {
               <p class="text-sm text-purple-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
             </div>
             <button type="button" id="demo-btn" 
-                    class="bg-purple-400 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Demo starten
             </button>
           </div>
@@ -288,51 +267,6 @@ function renderOnboarding() {
       </div>
     </div>
   `;
-
-  // Gespeicherte Daten laden und Felder vorausfüllen
-  const savedToken = localStorage.getItem('cf_log_token');
-  const savedGistId = localStorage.getItem('cf_log_gist_id');
-  const savedUserName = localStorage.getItem('cf_log_user_name');
-  
-  if (savedToken) {
-    // Token-Felder vorausfüllen
-    document.querySelectorAll('input[name="token"]').forEach(input => {
-      input.value = savedToken;
-    });
-    
-    // Gist-ID vorausfüllen falls vorhanden
-    if (savedGistId) {
-      document.querySelector('input[name="gist_id"]').value = savedGistId;
-    }
-    
-    // Name vorausfüllen falls vorhanden
-    if (savedUserName) {
-      document.querySelector('input[name="name"]').value = savedUserName;
-    }
-    
-    // Auto-Login Sektion anzeigen
-    const autoLoginSection = document.getElementById('auto-login-section');
-    autoLoginSection.classList.remove('hidden');
-    
-    // Auto-Login Button Event Listener
-    document.getElementById('auto-login-btn').onclick = async () => {
-      try {
-        if (savedGistId) {
-          // Bestehenden Gist laden
-          const data = await loadGist(savedToken, savedGistId);
-          appData = { ...appData, ...data };
-        } else {
-          // Neuen Gist erstellen
-          appData.user.name = savedUserName || 'Benutzer';
-          const newGistId = await createGist(savedToken, appData);
-          localStorage.setItem('cf_log_gist_id', newGistId);
-        }
-  window.location.reload();
-      } catch (err) {
-        showNotification('Auto-Login fehlgeschlagen: ' + err.message, 'error');
-      }
-    };
-  }
 
   // Event Listeners
   document.getElementById('onboarding-form').onsubmit = async (e) => {
