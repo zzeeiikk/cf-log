@@ -858,8 +858,9 @@ function renderExerciseList() {
         </div>
         
         <div class="space-y-2">
-          ${exercise.sets.map(set => `
+          ${exercise.sets.map((set, index) => `
             <div class="flex items-center space-x-4 text-sm">
+              <span class="text-sm font-medium text-gray-500 min-w-[3rem]">Set ${index + 1}</span>
               <span class="bg-gray-100 px-2 py-1 rounded">${set.reps} Wdh.</span>
               <span class="bg-gray-100 px-2 py-1 rounded">${set.weight} kg</span>
               ${set.notes ? `<span class="text-gray-600 italic">"${set.notes}"</span>` : ''}
@@ -910,14 +911,20 @@ function renderAddExerciseModal() {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Sets</label>
               <div id="sets-container" class="space-y-2">
-                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                <div class="set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
+                  <div class="text-sm font-medium text-gray-600 text-center">Set 1</div>
                   <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required>
                   <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required>
                   <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2">
                   <button type="button" onclick="removeSet(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
                 </div>
               </div>
-              <button type="button" onclick="addSet()" class="text-blue-600 hover:text-blue-800 text-sm mt-2">+ Set hinzufügen</button>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <button type="button" onclick="addSet()" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
+                <button type="button" onclick="addMultipleSets(3)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 3 Sets</button>
+                <button type="button" onclick="addMultipleSets(5)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 5 Sets</button>
+                <button type="button" onclick="addMultipleSets(7)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
+              </div>
             </div>
             
             <div class="flex items-center space-x-4">
@@ -1232,8 +1239,9 @@ function showExerciseDetails(exerciseName) {
                   </div>
                   
                   <div class="space-y-2">
-                    ${training.sets.map(set => `
+                    ${training.sets.map((set, index) => `
                       <div class="flex items-center space-x-4 text-sm">
+                        <span class="text-sm font-medium text-gray-500 min-w-[3rem]">Set ${index + 1}</span>
                         <span class="bg-gray-100 px-2 py-1 rounded">${set.reps} Wdh.</span>
                         <span class="bg-gray-100 px-2 py-1 rounded">${set.weight} kg</span>
                         ${set.notes ? `<span class="text-gray-600 italic">"${set.notes}"</span>` : ''}
@@ -1303,8 +1311,9 @@ function showEditExerciseModal(exercise) {
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Sets</label>
               <div id="edit-sets-container" class="space-y-2">
-                ${exercise.sets.map(set => `
-                  <div class="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                ${exercise.sets.map((set, index) => `
+                  <div class="edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
+                    <div class="text-sm font-medium text-gray-600 text-center">Set ${index + 1}</div>
                     <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" value="${set.reps}" required>
                     <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" value="${set.weight}" required>
                     <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${set.notes || ''}">
@@ -1312,7 +1321,12 @@ function showEditExerciseModal(exercise) {
                   </div>
                 `).join('')}
               </div>
-              <button type="button" onclick="addEditSet()" class="text-blue-600 hover:text-blue-800 text-sm mt-2">+ Set hinzufügen</button>
+              <div class="flex flex-wrap gap-2 mt-2">
+                <button type="button" onclick="addEditSet()" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
+                <button type="button" onclick="addMultipleEditSets(3)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 3 Sets</button>
+                <button type="button" onclick="addMultipleEditSets(5)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 5 Sets</button>
+                <button type="button" onclick="addMultipleEditSets(7)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
+              </div>
             </div>
             
             <div class="flex items-center space-x-4">
@@ -1415,19 +1429,53 @@ function hideEditExerciseModal() {
 
 function addEditSet() {
   const container = document.getElementById('edit-sets-container');
+  const existingSets = container.querySelectorAll('.edit-set-row');
+  const setNumber = existingSets.length + 1;
+  
+  // Werte des letzten Sets holen (falls vorhanden)
+  let lastReps = '';
+  let lastWeight = '';
+  let lastNotes = '';
+  
+  if (existingSets.length > 0) {
+    const lastSet = existingSets[existingSets.length - 1];
+    const inputs = lastSet.querySelectorAll('input');
+    lastReps = inputs[0].value;
+    lastWeight = inputs[1].value;
+    lastNotes = inputs[2].value;
+  }
+  
   const setDiv = document.createElement('div');
-  setDiv.className = 'grid grid-cols-1 sm:grid-cols-4 gap-2';
+  setDiv.className = 'edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
   setDiv.innerHTML = `
-    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required>
-    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required>
-    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2">
+    <div class="text-sm font-medium text-gray-600 text-center">Set ${setNumber}</div>
+    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
+    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
+    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
     <button type="button" onclick="removeEditSet(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
   `;
   container.appendChild(setDiv);
+  
+  // Set-Nummern aktualisieren
+  updateEditSetNumbers();
 }
 
 function removeEditSet(button) {
   button.parentElement.remove();
+  updateEditSetNumbers();
+}
+
+function updateEditSetNumbers() {
+  const container = document.getElementById('edit-sets-container');
+  if (!container) return;
+  
+  const setRows = container.querySelectorAll('.edit-set-row');
+  setRows.forEach((row, index) => {
+    const numberDiv = row.querySelector('div');
+    if (numberDiv) {
+      numberDiv.textContent = index + 1;
+    }
+  });
 }
 
 function showTrainingContextMenu(exerciseId, event) {
@@ -1722,19 +1770,51 @@ function setupModalEventListeners() {
 // Utility Functions
 function addSet() {
   const container = document.getElementById('sets-container');
+  const existingSets = container.querySelectorAll('.set-row');
+  const setNumber = existingSets.length + 1;
+  
+  // Werte des letzten Sets holen (falls vorhanden)
+  let lastReps = '';
+  let lastWeight = '';
+  let lastNotes = '';
+  
+  if (existingSets.length > 0) {
+    const lastSet = existingSets[existingSets.length - 1];
+    const inputs = lastSet.querySelectorAll('input');
+    lastReps = inputs[0].value;
+    lastWeight = inputs[1].value;
+    lastNotes = inputs[2].value;
+  }
+  
   const setDiv = document.createElement('div');
-  setDiv.className = 'grid grid-cols-1 sm:grid-cols-4 gap-2';
+  setDiv.className = 'set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
   setDiv.innerHTML = `
-    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required>
-    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required>
-    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2">
+    <div class="text-sm font-medium text-gray-600 text-center">Set ${setNumber}</div>
+    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
+    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
+    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
     <button type="button" onclick="removeSet(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
   `;
   container.appendChild(setDiv);
+  
+  // Set-Nummern aktualisieren
+  updateSetNumbers();
+}
+
+function updateSetNumbers() {
+  const container = document.getElementById('sets-container');
+  const setRows = container.querySelectorAll('.set-row');
+  setRows.forEach((row, index) => {
+    const numberDiv = row.querySelector('div');
+    if (numberDiv) {
+      numberDiv.textContent = index + 1;
+    }
+  });
 }
 
 function removeSet(button) {
   button.parentElement.remove();
+  updateSetNumbers();
 }
 
 function editExercise(id) {
@@ -2045,3 +2125,15 @@ async function main() {
 
 // Initialize app
 main();
+
+function addMultipleSets(count) {
+  for (let i = 0; i < count; i++) {
+    addSet();
+  }
+}
+
+function addMultipleEditSets(count) {
+  for (let i = 0; i < count; i++) {
+    addEditSet();
+  }
+}
