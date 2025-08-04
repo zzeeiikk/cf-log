@@ -912,7 +912,7 @@ function renderAddExerciseModal() {
               <label class="block text-sm font-medium text-gray-700 mb-1">Sets</label>
               <div id="sets-container" class="space-y-2">
                 <div class="set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
-                  <div class="text-sm font-medium text-gray-600 text-center">Set 1</div>
+                  <div class="text-sm font-medium text-gray-600 text-center">1</div>
                   <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required>
                   <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required>
                   <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2">
@@ -1313,7 +1313,7 @@ function showEditExerciseModal(exercise) {
               <div id="edit-sets-container" class="space-y-2">
                 ${exercise.sets.map((set, index) => `
                   <div class="edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
-                    <div class="text-sm font-medium text-gray-600 text-center">Set ${index + 1}</div>
+                    <div class="text-sm font-medium text-gray-600 text-center">${index + 1}</div>
                     <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" value="${set.reps}" required>
                     <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" value="${set.weight}" required>
                     <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${set.notes || ''}">
@@ -1448,7 +1448,7 @@ function addEditSet() {
   const setDiv = document.createElement('div');
   setDiv.className = 'edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
   setDiv.innerHTML = `
-    <div class="text-sm font-medium text-gray-600 text-center">Set ${setNumber}</div>
+    <div class="text-sm font-medium text-gray-600 text-center">${setNumber}</div>
     <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
     <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
     <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
@@ -1789,7 +1789,7 @@ function addSet() {
   const setDiv = document.createElement('div');
   setDiv.className = 'set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
   setDiv.innerHTML = `
-    <div class="text-sm font-medium text-gray-600 text-center">Set ${setNumber}</div>
+    <div class="text-sm font-medium text-gray-600 text-center">${setNumber}</div>
     <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
     <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
     <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
