@@ -195,8 +195,33 @@ function renderOnboarding() {
           <h1 class="text-3xl font-bold text-gray-900 mb-2">cf-log</h1>
           <p class="text-gray-600">Dein flexibles Trainingslog mit GitHub Gists</p>
         </div>
-        
-        <div class="mb-8 p-4 bg-blue-50 rounded-lg">
+
+
+
+
+        <h2 class="text-center font-semibold text-gray-900 mt-3 mb-3">Einloggen</h2>
+        <form id="login-form" class="space-y-4 mb-6 mt-6">
+          <input type="text" name="gist_id" placeholder="Gist-ID (optional)" 
+                 class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          <input type="password" name="token" placeholder="GitHub Token" required 
+                 class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          <button type="submit" 
+                  class="w-full bg-gray-400 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+            Einloggen
+          </button>
+        </form>
+
+                <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">oder</span>
+          </div>
+        </div>
+
+        <h2 class="text-center font-semibold text-gray-900 mt-3 mb-3">Neues Profil anlegen</h2>
+        <div class="mb-8 mt-6 p-4 bg-blue-50 rounded-lg">
           <h3 class="font-semibold text-blue-900 mb-3">GitHub Token erstellen:</h3>
           <div class="flex justify-center mb-3">
             <a href="https://github.com/settings/tokens" target="_blank" 
@@ -218,27 +243,8 @@ function renderOnboarding() {
 
 
 
-                <form id="login-form" class="space-y-4 mb-6">
-          <input type="text" name="gist_id" placeholder="Gist-ID (optional)" 
-                 class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-          <input type="password" name="token" placeholder="GitHub Token" required 
-                 class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-          <button type="submit" 
-                  class="w-full bg-gray-400 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
-            Einloggen
-          </button>
-        </form>
 
-        <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500">oder</span>
-          </div>
-        </div>
-
-        <form id="onboarding-form" class="space-y-4 mt-6 mb-6">
+        <form id="onboarding-form" class="space-y-4 mb-6">
           <input type="text" name="name" placeholder="Dein Name" required 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <input type="password" name="token" placeholder="GitHub Token" required 
@@ -249,6 +255,15 @@ function renderOnboarding() {
           </button>
         </form>
         
+
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-300"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500"></span>
+          </div>
+        </div>
 
 
         <!-- Demo Button -->
@@ -355,7 +370,6 @@ function renderDashboard() {
           <div class="flex justify-between items-center ${currentView === 'training' ? 'h-12' : 'h-16'}">
             <div class="flex items-center">
               <img src="cf-log.jpg" alt="cf-log Logo" class="h-8 w-8 mr-3 rounded">
-              <h1 class="${currentView === 'training' ? 'text-lg' : 'text-xl'} font-semibold text-gray-900">cf-log</h1>
               <span class="ml-3 text-sm text-gray-500">Hallo, ${userName}</span>
             </div>
             <div class="flex items-center space-x-4">
