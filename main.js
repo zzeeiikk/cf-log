@@ -354,9 +354,10 @@ function renderDashboard() {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center ${currentView === 'training' ? 'h-12' : 'h-16'}">
             <div class="flex items-center">
-              <h1 class="${currentView === 'training' ? 'text-lg' : 'text-xl'} font-semibold text-gray-900">🏋️‍♂️ cf-log</h1>
+              <img src="cf-log.jpg" alt="cf-log Logo" class="h-8 w-8 mr-3 rounded">
+              <h1 class="${currentView === 'training' ? 'text-lg' : 'text-xl'} font-semibold text-gray-900">cf-log</h1>
               <span class="ml-3 text-sm text-gray-500">Hallo, ${userName}</span>
-      </div>
+            </div>
             <div class="flex items-center space-x-4">
               <button onclick="showAddExerciseModal()" 
                       class="bg-blue-600 hover:bg-blue-700 text-white ${currentView === 'training' ? 'px-4 py-2' : 'px-3 py-1'} text-sm rounded-md font-medium transition-colors">
