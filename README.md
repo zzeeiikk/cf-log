@@ -19,7 +19,7 @@ Ein modernes, flexibles Trainingslog mit GitHub Gists als Datenspeicher. Kein Ba
 <div align="center">
 
 ### 📱 Mobile Trainings View
-![Mobile Trainings View](img/mobile-trainings-view.PNG)
+<img src="img/mobile-trainings-view.PNG" width="248"><br>
 *Optimiert für das Training - übersichtlich und ablenkungsfrei*
 
 ### 📝 Aktivitäts Log
