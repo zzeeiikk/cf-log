@@ -16,14 +16,21 @@ Ein modernes, flexibles Trainingslog mit GitHub Gists als Datenspeicher. Kein Ba
 
 ## 🖼️ Screenshots
 
-**Screenshot Mobile Trainings View**  
-![Screenshot Mobile Trainings View](img/mobile-trainings-view.PNG)
+<div align="center">
 
-**Screenshot Aktivitäts Log**  
-![Screenshot Aktivitäts Log](img/log-view.png)
+### 📱 Mobile Trainings View
+![Mobile Trainings View](img/mobile-trainings-view.PNG)
+*Optimiert für das Training - übersichtlich und ablenkungsfrei*
 
-**Screenshot Statistik View**  
-![Screenshot Statistik View](img/stats-view.png)
+### 📝 Aktivitäts Log
+![Aktivitäts Log](img/log-view.png)
+*Chronologische Übersicht aller Trainings mit Details*
+
+### 📊 Statistik View
+![Statistik View](img/stats-view.png)
+*Detaillierte Statistiken und Jahresvergleiche*
+
+</div>
 
 
 ## 🚀 Schnellstart

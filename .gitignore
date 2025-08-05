@@ -1,3 +1,5 @@
 #Test-Dateien ignorieren
-trainingsdata.json
 converted_trainingsdata.json
+
+converted_training_data.json
+logo*
