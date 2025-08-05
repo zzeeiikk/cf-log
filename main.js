@@ -191,7 +191,7 @@ function renderOnboarding() {
     <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
         <div class="text-center mb-8">
-          <div class="text-4xl mb-4">🏋️‍♂️</div>
+          <img src="cf-log.jpg" alt="cf-log Logo" class="w-20 h-20 mx-auto mb-4 rounded-lg">
           <h1 class="text-3xl font-bold text-gray-900 mb-2">cf-log</h1>
           <p class="text-gray-600">Dein flexibles Trainingslog mit GitHub Gists</p>
         </div>
