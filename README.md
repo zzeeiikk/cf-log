@@ -158,7 +158,16 @@ Verbesserungen und Bug-Reports sind willkommen!
 
 ## 📄 Lizenz
 
-MIT License - siehe LICENSE-Datei für Details.
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License - siehe LICENSE-Datei für Details.
+
+Diese Lizenz erlaubt:
+- **Teilen** - Kopieren und Weiterverbreiten in jedem Medium oder Format
+- **Anpassen** - Remixen, Transformieren und Aufbauen auf dem Material
+
+Unter folgenden Bedingungen:
+- **Namensnennung** - Du musst angemessene Urheberschaft angeben
+- **Nicht-kommerziell** - Du darfst das Material nicht für kommerzielle Zwecke verwenden
+- **Weitergabe unter gleichen Bedingungen** - Wenn du das Material remixst, transformierst oder darauf aufbaust, musst du deine Beiträge unter derselben Lizenz wie das Original verbreiten
 
 ## 🙏 Danksagungen
 
