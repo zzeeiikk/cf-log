@@ -1351,14 +1351,16 @@ function showEditExerciseModal(exercise) {
                      value="${exercise.date}">
             </div>
             
+            ${exercise.isNote ? '' : `
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Übung</label>
-              <input type="text" id="edit-exercise-name" list="edit-exercise-datalist" required 
+              <label class="block text-sm font-medium text-gray-700 mb-1">Übung (optional bei Notizen)</label>
+              <input type="text" id="edit-exercise-name" list="edit-exercise-datalist" 
                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     value="${exercise.exercise}">
+                     value="${exercise.isNote ? '' : exercise.exercise}">
               <datalist id="edit-exercise-datalist">
                 ${getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('')}
               </datalist>
+              <p class="text-xs text-gray-500 mt-1">💡 Leer lassen für eine reine Notiz ohne Übung</p>
             </div>
             
             <div>
@@ -1381,7 +1383,9 @@ function showEditExerciseModal(exercise) {
                 <button type="button" onclick="addMultipleEditSets(7)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
               </div>
             </div>
+            `}
             
+            ${exercise.isNote ? '' : `
             <div class="flex items-center space-x-4">
               <label class="flex items-center">
                 <input type="checkbox" id="edit-in-workout" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${exercise.inWorkout ? 'checked' : ''}>
@@ -1392,6 +1396,7 @@ function showEditExerciseModal(exercise) {
                 <span class="ml-2 text-sm text-gray-700">1RM Versuch</span>
               </label>
             </div>
+            `}
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
@@ -1426,9 +1431,13 @@ function showEditExerciseModal(exercise) {
     const id = document.getElementById('edit-exercise-id').value;
     const date = document.getElementById('edit-exercise-date').value;
     const exerciseName = document.getElementById('edit-exercise-name').value.trim();
-    const inWorkout = document.getElementById('edit-in-workout').checked;
-    const is1RM = document.getElementById('edit-is-1rm').checked;
     const notes = document.getElementById('edit-exercise-notes').value.trim();
+    
+    // Checkboxen nur bei Trainings berücksichtigen
+    const inWorkoutElement = document.getElementById('edit-in-workout');
+    const is1RMElement = document.getElementById('edit-is-1rm');
+    const inWorkout = inWorkoutElement ? inWorkoutElement.checked : false;
+    const is1RM = is1RMElement ? is1RMElement.checked : false;
     
     const sets = [];
     const setRows = document.querySelectorAll('#edit-sets-container > div');
@@ -1447,28 +1456,38 @@ function showEditExerciseModal(exercise) {
       }
     }
     
-    if (!date || !exerciseName || sets.length === 0) {
-      showNotification('Bitte alle Pflichtfelder ausfüllen!', 'error');
+    // Prüfe ob es eine Notiz ohne Übung ist
+    const isNoteOnly = (!exerciseName || exerciseName === 'Notiz') && notes;
+    const isTraining = exerciseName && exerciseName !== 'Notiz' && sets.length > 0;
+    
+    if (!date) {
+      showNotification('Bitte ein Datum auswählen!', 'error');
       return;
     }
     
-    // Training aktualisieren
+    if (!isNoteOnly && !isTraining) {
+      showNotification('Bitte entweder eine Übung mit Sets oder eine Notiz eingeben!', 'error');
+      return;
+    }
+    
+    // Eintrag aktualisieren
     const exerciseIndex = appData.exercises.findIndex(e => e.id === id);
     if (exerciseIndex !== -1) {
       appData.exercises[exerciseIndex] = {
         ...appData.exercises[exerciseIndex],
         date,
-        exercise: exerciseName,
-        sets,
-        inWorkout,
-        is1RM,
-        notes: notes || null
+        exercise: exerciseName || 'Notiz',
+        sets: isNoteOnly ? [] : sets,
+        inWorkout: isNoteOnly ? false : inWorkout,
+        is1RM: isNoteOnly ? false : is1RM,
+        notes: notes || null,
+        isNote: isNoteOnly
       };
       
       await saveData();
       hideEditExerciseModal();
       renderDashboard();
-      showNotification('Training erfolgreich aktualisiert!', 'success');
+      showNotification(isNoteOnly ? 'Notiz erfolgreich aktualisiert!' : 'Training erfolgreich aktualisiert!', 'success');
     }
   });
 }
