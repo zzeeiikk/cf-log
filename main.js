@@ -460,7 +460,7 @@ function renderDashboard() {
               </div>
               <div class="space-y-3">
                 <div class="flex justify-between">
-                  <span class="text-gray-600">Gesamt Trainings:</span>
+                  <span class="text-gray-600">Gesamt Einträge:</span>
                   <span class="font-semibold">${appData.exercises.length}</span>
                 </div>
                 <div class="flex justify-between">
@@ -549,11 +549,11 @@ function renderExerciseSummary() {
     return `
       <div class="p-8 text-center">
         <div class="text-4xl mb-4">🏋️‍♂️</div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Noch keine Trainings</h3>
-        <p class="text-gray-500 mb-4">Füge dein erstes Training hinzu!</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Noch keine Einträge</h3>
+        <p class="text-gray-500 mb-4">Füge dein erstes Training oder eine Notiz hinzu!</p>
         <button onclick="showAddExerciseModal()" 
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
-          Erstes Training hinzufügen
+          Ersten Eintrag hinzufügen
         </button>
       </div>
     `;
@@ -561,10 +561,11 @@ function renderExerciseSummary() {
   // Gruppiere Übungen nach Namen
   const exerciseGroups = {};
   appData.exercises.forEach(exercise => {
-    if (!exerciseGroups[exercise.exercise]) {
-      exerciseGroups[exercise.exercise] = [];
+    const key = exercise.isNote ? '📝 Notizen' : exercise.exercise;
+    if (!exerciseGroups[key]) {
+      exerciseGroups[key] = [];
     }
-    exerciseGroups[exercise.exercise].push(exercise);
+    exerciseGroups[key].push(exercise);
   });
   // Sortiere nach Standard-Übungen
   const sortedExercises = sortExercisesByDefaultOrder(Object.entries(exerciseGroups));
@@ -572,8 +573,9 @@ function renderExerciseSummary() {
     const totalSessions = exercises.length;
     const lastSession = exercises.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
     const firstSession = exercises.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+    const isNoteGroup = exerciseName === '📝 Notizen';
     
-    // Berechne Statistiken
+    // Berechne Statistiken (nur für Trainings)
     let totalSets = 0;
     let totalReps = 0;
     let maxWeight = 0;
@@ -583,22 +585,24 @@ function renderExerciseSummary() {
     let oneRMWeight = null;
 
     exercises.forEach(ex => {
-      ex.sets.forEach(set => {
-        totalSets++;
-        totalReps += set.reps;
-        maxWeight = Math.max(maxWeight, set.weight);
-        totalWeight += set.weight;
-      });
-      if (ex.is1RM) {
-        is1RMCount++;
-        // Finde das höchste Gewicht aus 1RM Trainings
-        const oneRMSets = ex.sets.map(set => set.weight);
-        const maxOneRM = Math.max(...oneRMSets);
-        if (!oneRMWeight || maxOneRM > oneRMWeight) {
-          oneRMWeight = maxOneRM;
+      if (!ex.isNote) {
+        ex.sets.forEach(set => {
+          totalSets++;
+          totalReps += set.reps;
+          maxWeight = Math.max(maxWeight, set.weight);
+          totalWeight += set.weight;
+        });
+        if (ex.is1RM) {
+          is1RMCount++;
+          // Finde das höchste Gewicht aus 1RM Trainings
+          const oneRMSets = ex.sets.map(set => set.weight);
+          const maxOneRM = Math.max(...oneRMSets);
+          if (!oneRMWeight || maxOneRM > oneRMWeight) {
+            oneRMWeight = maxOneRM;
+          }
         }
+        if (ex.inWorkout) inWorkoutCount++;
       }
-      if (ex.inWorkout) inWorkoutCount++;
     });
 
     const avgWeight = totalWeight > 0 ? (totalWeight / totalSets).toFixed(1) : 0;
@@ -610,7 +614,7 @@ function renderExerciseSummary() {
           <div class="flex-1">
             <h3 class="text-xl font-semibold text-gray-900 mb-1">${exerciseName}</h3>
             <div class="flex items-center space-x-4 text-sm text-gray-500">
-              <span>${totalSessions} Training${totalSessions > 1 ? 's' : ''}</span>
+              <span>${totalSessions} Eintrag${totalSessions > 1 ? 'e' : ''}</span>
               <span>•</span>
               <span>Letztes: ${formatDate(lastSession.date)}</span>
               <span>•</span>
@@ -629,57 +633,74 @@ function renderExerciseSummary() {
           </div>
         </div>
         
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <div class="text-2xl font-bold text-gray-900">${totalSets}</div>
-            <div class="text-sm text-gray-600">Gesamt Sets</div>
-          </div>
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <div class="text-2xl font-bold text-gray-900">${avgReps}</div>
-            <div class="text-sm text-gray-600">Ø Wiederholungen</div>
-          </div>
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <div class="text-2xl font-bold text-gray-900">${avgWeight} kg</div>
-            <div class="text-sm text-gray-600">Ø Gewicht</div>
-          </div>
-          <div class="bg-gray-50 p-3 rounded-lg">
-            <div class="text-2xl font-bold text-gray-900">${oneRMWeight ? oneRMWeight + ' kg' : '—'}</div>
-            <div class="text-sm text-gray-600">1RM / Max Gewicht</div>
-          </div>
-        </div>
-
-        <div class="mt-4 pt-4 border-t border-gray-200">
-          <div class="flex justify-between items-center mb-3">
-            <h4 class="text-sm font-medium text-gray-900">Letzte Trainings</h4>
-            <span class="text-xs text-gray-500">Fortschritt: ${formatDate(firstSession.date)} → ${formatDate(lastSession.date)}</span>
-          </div>
+        ${isNoteGroup ? `
           <div class="space-y-2">
             ${exercises
               .sort((a, b) => new Date(b.date) - new Date(a.date))
               .slice(0, 3)
-              .map(training => `
-                <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
-                  <div class="flex items-center space-x-3">
-                    <span class="text-sm font-medium text-gray-900">${formatDate(training.date)}</span>
-                    <span class="text-xs text-gray-500">${training.sets.length} Sets</span>
-                    ${training.is1RM ? '<span class="bg-red-100 text-red-800 text-xs px-1 py-0.5 rounded">1RM</span>' : ''}
-                    ${training.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">Workout</span>' : ''}
+              .map(note => `
+                <div class="p-3 bg-purple-50 rounded-lg">
+                  <div class="flex justify-between items-start mb-1">
+                    <span class="text-sm font-medium text-gray-900">${formatDate(note.date)}</span>
+                    ${note.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">Workout</span>' : ''}
                   </div>
-                  <div class="text-xs text-gray-600 max-w-32 truncate">
-                    ${formatSetsIntelligently(training.sets)}
-                  </div>
+                  <p class="text-gray-700">${note.notes}</p>
                 </div>
               `).join('')}
           </div>
-          ${exercises.length > 3 ? `
-            <div class="mt-3 text-center">
-              <button onclick="showExerciseDetails('${exerciseName}')" 
-                      class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                Alle ${exercises.length} Trainings anzeigen →
-              </button>
+        ` : `
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <div class="text-2xl font-bold text-gray-900">${totalSets}</div>
+              <div class="text-sm text-gray-600">Gesamt Sets</div>
             </div>
-          ` : ''}
-        </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <div class="text-2xl font-bold text-gray-900">${avgReps}</div>
+              <div class="text-sm text-gray-600">Ø Wiederholungen</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <div class="text-2xl font-bold text-gray-900">${avgWeight} kg</div>
+              <div class="text-sm text-gray-600">Ø Gewicht</div>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <div class="text-2xl font-bold text-gray-900">${oneRMWeight ? oneRMWeight + ' kg' : '—'}</div>
+              <div class="text-sm text-gray-600">1RM / Max Gewicht</div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-4 border-t border-gray-200">
+            <div class="flex justify-between items-center mb-3">
+              <h4 class="text-sm font-medium text-gray-900">Letzte Trainings</h4>
+              <span class="text-xs text-gray-500">Fortschritt: ${formatDate(firstSession.date)} → ${formatDate(lastSession.date)}</span>
+            </div>
+            <div class="space-y-2">
+              ${exercises
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 3)
+                .map(training => `
+                  <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                    <div class="flex items-center space-x-3">
+                      <span class="text-sm font-medium text-gray-900">${formatDate(training.date)}</span>
+                      <span class="text-xs text-gray-500">${training.sets.length} Sets</span>
+                      ${training.is1RM ? '<span class="bg-red-100 text-red-800 text-xs px-1 py-0.5 rounded">1RM</span>' : ''}
+                      ${training.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">Workout</span>' : ''}
+                    </div>
+                    <div class="text-xs text-gray-600 max-w-32 truncate">
+                      ${formatSetsIntelligently(training.sets)}
+                    </div>
+                  </div>
+                `).join('')}
+            </div>
+            ${exercises.length > 3 ? `
+              <div class="mt-3 text-center">
+                <button onclick="showExerciseDetails('${exerciseName}')" 
+                        class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                  Alle ${exercises.length} Trainings anzeigen →
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `}
       </div>
     `;
   }).join('');
@@ -702,20 +723,22 @@ function renderTrainingMode() {
   // Gruppiere Übungen nach Namen
   const exerciseGroups = {};
   appData.exercises.forEach(exercise => {
-    if (!exerciseGroups[exercise.exercise]) {
-      exerciseGroups[exercise.exercise] = [];
+    const key = exercise.isNote ? '📝 Notizen' : exercise.exercise;
+    if (!exerciseGroups[key]) {
+      exerciseGroups[key] = [];
     }
-    exerciseGroups[exercise.exercise].push(exercise);
+    exerciseGroups[key].push(exercise);
   });
   // Sortiere nach Standard-Übungen
   const sortedExercises = sortExercisesByDefaultOrder(Object.entries(exerciseGroups));
   return sortedExercises.map(([exerciseName, exercises]) => {
     const lastSession = exercises.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    const isNoteGroup = exerciseName === '📝 Notizen';
     
-    // Finde 1RM falls vorhanden
+    // Finde 1RM falls vorhanden (nur für Trainings)
     let oneRMWeight = null;
     exercises.forEach(ex => {
-      if (ex.is1RM) {
+      if (!ex.isNote && ex.is1RM) {
         const oneRMSets = ex.sets.map(set => set.weight);
         const maxOneRM = Math.max(...oneRMSets);
         if (!oneRMWeight || maxOneRM > oneRMWeight) {
@@ -730,7 +753,7 @@ function renderTrainingMode() {
           <div class="flex-1">
             <h3 class="text-lg font-semibold text-gray-900">${exerciseName}</h3>
             <div class="text-sm text-gray-500">
-              Letztes: ${formatDate(lastSession.date)} • ${lastSession.sets.length} Sets
+              Letztes: ${formatDate(lastSession.date)}${isNoteGroup ? '' : ` • ${lastSession.sets.length} Sets`}
             </div>
           </div>
           ${oneRMWeight ? `
@@ -746,23 +769,30 @@ function renderTrainingMode() {
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 2)
             .map(training => `
-              <div class="p-2 bg-gray-50 rounded text-sm group relative">
+              <div class="p-2 ${training.isNote ? 'bg-purple-50' : 'bg-gray-50'} rounded text-sm group relative">
                 <div class="flex justify-between items-start">
                   <div class="flex items-center space-x-2">
                     <span class="font-medium">${formatDate(training.date)}</span>
+                    ${training.isNote ? '<span class="bg-purple-100 text-purple-800 text-xs px-1 py-0.5 rounded">📝</span>' : ''}
                     ${training.is1RM ? '<span class="bg-red-100 text-red-800 text-xs px-1 py-0.5 rounded">1RM</span>' : ''}
                     ${training.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">W</span>' : ''}
                   </div>
                   <div class="flex items-center space-x-1">
                     <div class="flex flex-col items-end space-y-1">
-                      <div class="text-gray-600 font-mono text-right">
-                        ${formatSetsIntelligently(training.sets)}
-                      </div>
-                      ${training.notes ? `
-                        <div class="text-gray-600 italic text-xs text-right">
-                          📝 ${training.notes}
+                      ${training.isNote ? `
+                        <div class="text-gray-700 text-right">
+                          ${training.notes}
                         </div>
-                      ` : ''}
+                      ` : `
+                        <div class="text-gray-600 font-mono text-right">
+                          ${formatSetsIntelligently(training.sets)}
+                        </div>
+                        ${training.notes ? `
+                          <div class="text-gray-600 italic text-xs text-right">
+                            📝 ${training.notes}
+                          </div>
+                        ` : ''}
+                      `}
                     </div>
                     <div class="opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onclick="showTrainingContextMenu('${training.id}', event)" 
@@ -780,7 +810,7 @@ function renderTrainingMode() {
           <div class="mt-3 pt-3 border-t border-gray-200">
             <button onclick="toggleTrainingHistory('${exerciseName}')" 
                     class="w-full text-left text-gray-500 hover:text-blue-600 text-sm flex items-center justify-between transition-colors">
-              <span>Alle ${exercises.length} Trainings anzeigen</span>
+              <span>Alle ${exercises.length} ${isNoteGroup ? 'Notizen' : 'Trainings'} anzeigen</span>
               <svg id="toggle-icon-${exerciseName.replace(/\s+/g, '-')}" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
@@ -835,11 +865,11 @@ function renderExerciseList() {
     return `
       <div class="p-8 text-center">
         <div class="text-4xl mb-4">🏋️‍♂️</div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Noch keine Trainings</h3>
-        <p class="text-gray-500 mb-4">Füge dein erstes Training hinzu!</p>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Noch keine Einträge</h3>
+        <p class="text-gray-500 mb-4">Füge dein erstes Training oder eine Notiz hinzu!</p>
         <button onclick="showAddExerciseModal()" 
                 class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">
-          Erstes Training hinzufügen
+          Ersten Eintrag hinzufügen
         </button>
       </div>
     `;
@@ -852,9 +882,10 @@ function renderExerciseList() {
         <div class="flex justify-between items-start mb-3">
           <div>
             <h3 class="text-lg font-semibold text-gray-900">${formatDate(exercise.date)}</h3>
-            <p class="text-sm text-gray-500">${exercise.exercise}</p>
+            <p class="text-sm text-gray-500">${exercise.isNote ? '📝 Notizen' : exercise.exercise}</p>
           </div>
           <div class="flex items-center space-x-2">
+            ${exercise.isNote ? '<span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">📝 Notiz</span>' : ''}
             ${exercise.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Im Workout</span>' : ''}
             ${exercise.is1RM ? '<span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">1RM</span>' : ''}
             <button onclick="editExercise('${exercise.id}')" 
@@ -872,18 +903,24 @@ function renderExerciseList() {
           </div>
         </div>
         
-        <div class="space-y-2">
-          ${exercise.sets.map((set, index) => `
-            <div class="flex items-center space-x-4 text-sm">
-              <span class="text-sm font-medium text-gray-500 min-w-[3rem]">Set ${index + 1}</span>
-              <span class="bg-gray-100 px-2 py-1 rounded">${set.reps} Wdh.</span>
-              <span class="bg-gray-100 px-2 py-1 rounded">${set.weight} kg</span>
-              ${set.notes ? `<span class="text-gray-600 italic">"${set.notes}"</span>` : ''}
-            </div>
-          `).join('')}
-        </div>
-        
-        ${exercise.notes ? `<p class="mt-3 text-sm text-gray-600 italic">"${exercise.notes}"</p>` : ''}
+        ${exercise.isNote ? `
+          <div class="p-3 bg-purple-50 rounded-lg">
+            <p class="text-gray-700">${exercise.notes}</p>
+          </div>
+        ` : `
+          <div class="space-y-2">
+            ${exercise.sets.map((set, index) => `
+              <div class="flex items-center space-x-4 text-sm">
+                <span class="text-sm font-medium text-gray-500 min-w-[3rem]">Set ${index + 1}</span>
+                <span class="bg-gray-100 px-2 py-1 rounded">${set.reps} Wdh.</span>
+                <span class="bg-gray-100 px-2 py-1 rounded">${set.weight} kg</span>
+                ${set.notes ? `<span class="text-gray-600 italic">"${set.notes}"</span>` : ''}
+              </div>
+            `).join('')}
+          </div>
+          
+          ${exercise.notes ? `<p class="mt-3 text-sm text-gray-600 italic">"${exercise.notes}"</p>` : ''}
+        `}
       </div>
     `).join('');
 }
@@ -895,7 +932,7 @@ function renderAddExerciseModal() {
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
           <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
-              <h3 class="text-lg font-semibold text-gray-900">Training hinzufügen</h3>
+              <h3 class="text-lg font-semibold text-gray-900">Eintrag hinzufügen</h3>
               <button onclick="hideAddExerciseModal()" 
                       class="text-gray-400 hover:text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -914,22 +951,23 @@ function renderAddExerciseModal() {
             </div>
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Übung</label>
-              <input type="text" id="exercise-name" list="exercise-datalist" required 
+              <label class="block text-sm font-medium text-gray-700 mb-1">Übung (optional bei Notizen)</label>
+              <input type="text" id="exercise-name" list="exercise-datalist" 
                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     placeholder="Übung auswählen oder eingeben">
+                     placeholder="Übung auswählen">
               <datalist id="exercise-datalist">
                 ${getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('')}
               </datalist>
+              <p class="text-xs text-gray-500 mt-1">💡 Leer lassen für eine reine Notiz ohne Übung</p>
             </div>
             
-            <div>
+            <div id="training-fields">
               <label class="block text-sm font-medium text-gray-700 mb-1">Sets</label>
               <div id="sets-container" class="space-y-2">
                 <div class="set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
                   <div class="text-sm font-medium text-gray-600 text-center">1</div>
-                  <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required>
-                  <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required>
+                  <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2">
+                  <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2">
                   <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2">
                   <button type="button" onclick="removeSet(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
                 </div>
@@ -957,7 +995,7 @@ function renderAddExerciseModal() {
               <label class="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
               <textarea id="exercise-notes" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Optionale Notizen zum Training..."></textarea>
+                        placeholder="Notizen"></textarea>
             </div>
             
             <div class="flex space-x-3 pt-4">
@@ -1293,7 +1331,7 @@ function showEditExerciseModal(exercise) {
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
           <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
-              <h3 class="text-lg font-semibold text-gray-900">Training bearbeiten</h3>
+              <h3 class="text-lg font-semibold text-gray-900">Eintrag bearbeiten</h3>
               <button onclick="hideEditExerciseModal()" 
                       class="text-gray-400 hover:text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1359,7 +1397,7 @@ function showEditExerciseModal(exercise) {
               <label class="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
               <textarea id="edit-exercise-notes" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Optionale Notizen zum Training...">${exercise.notes || ''}</textarea>
+                        placeholder="Notizen">${exercise.notes || ''}</textarea>
             </div>
             
             <div class="flex space-x-3 pt-4">
@@ -1752,13 +1790,22 @@ function setupModalEventListeners() {
       }
     }
 
-  if (!date || !exercise || sets.length === 0) {
-      showNotification('Bitte alle Pflichtfelder ausfüllen!', 'error');
-    return;
-  }
+    // Prüfe ob es eine Notiz ohne Übung ist
+    const isNoteOnly = !exercise && notes;
+    const isTraining = exercise && sets.length > 0;
+    
+    if (!date) {
+      showNotification('Bitte ein Datum auswählen!', 'error');
+      return;
+    }
+    
+    if (!isNoteOnly && !isTraining) {
+      showNotification('Bitte entweder eine Übung mit Sets oder eine Notiz eingeben!', 'error');
+      return;
+    }
 
-    // Automatisch neue Übung zur Standard-Liste hinzufügen
-    if (!appData.settings.defaultExercises.includes(exercise)) {
+    // Automatisch neue Übung zur Standard-Liste hinzufügen (nur bei Trainings)
+    if (exercise && !appData.settings.defaultExercises.includes(exercise)) {
       appData.settings.defaultExercises.push(exercise);
       showNotification(`Neue Übung "${exercise}" wurde zur Standard-Liste hinzugefügt!`, 'info');
     }
@@ -1766,11 +1813,12 @@ function setupModalEventListeners() {
     const newExercise = {
       id: generateId(),
       date,
-      exercise,
-      sets,
-      inWorkout,
-      is1RM,
-      notes: notes || null
+      exercise: exercise || 'Notiz',
+      sets: isNoteOnly ? [] : sets,
+      inWorkout: isNoteOnly ? false : inWorkout,
+      is1RM: isNoteOnly ? false : is1RM,
+      notes: notes || null,
+      isNote: isNoteOnly
     };
     
     appData.exercises.push(newExercise);
@@ -1778,7 +1826,7 @@ function setupModalEventListeners() {
     
     hideAddExerciseModal();
     renderDashboard();
-    showNotification('Training erfolgreich gespeichert!', 'success');
+    showNotification(isNoteOnly ? 'Notiz erfolgreich gespeichert!' : 'Training erfolgreich gespeichert!', 'success');
   });
 }
 
