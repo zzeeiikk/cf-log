@@ -86,6 +86,57 @@ function formatDate(date) {
   return `${day}.${month}.${year}`;
 }
 
+// Einfache Markdown-Formatierung für Notizen
+function formatNotes(text) {
+  if (!text) return '';
+  
+  // Erst Listen verarbeiten
+  let formatted = text;
+  
+  // Listen verarbeiten
+  const lines = formatted.split('\n');
+  const processedLines = [];
+  let inList = false;
+  let listItems = [];
+  
+  for (const line of lines) {
+    if (line.trim().startsWith('- ')) {
+      // Listenpunkt gefunden
+      if (!inList) {
+        inList = true;
+      }
+      listItems.push(line.trim().substring(2)); // "- " entfernen
+    } else {
+      // Kein Listenpunkt
+      if (inList && listItems.length > 0) {
+        // Liste beenden
+        const listHtml = `<ul class="list-disc list-inside space-y-1">${listItems.map(item => `<li>${item}</li>`).join('')}</ul>`;
+        processedLines.push(listHtml);
+        listItems = [];
+        inList = false;
+      }
+      processedLines.push(line);
+    }
+  }
+  
+  // Letzte Liste verarbeiten
+  if (inList && listItems.length > 0) {
+    const listHtml = `<ul class="list-disc list-inside space-y-1">${listItems.map(item => `<li>${item}</li>`).join('')}</ul>`;
+    processedLines.push(listHtml);
+  }
+  
+  formatted = processedLines.join('\n');
+  
+  // Dann andere Formatierungen
+  return formatted
+    // Zeilenumbrüche zu <br> konvertieren (außer bei Listen)
+    .replace(/\n/g, '<br>')
+    // **text** zu <strong>text</strong> (Fett)
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // *text* zu <em>text</em> (Kursiv)
+    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+}
+
 // Neue Funktion zur intelligenten Darstellung von Sets
 function formatSetsIntelligently(sets) {
   if (sets.length === 0) return '';
@@ -644,7 +695,7 @@ function renderExerciseSummary() {
                     <span class="text-sm font-medium text-gray-900">${formatDate(note.date)}</span>
                     ${note.inWorkout ? '<span class="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded">Workout</span>' : ''}
                   </div>
-                  <p class="text-gray-700">${note.notes}</p>
+                  <div class="text-gray-700">${formatNotes(note.notes)}</div>
                 </div>
               `).join('')}
           </div>
@@ -781,7 +832,7 @@ function renderTrainingMode() {
                     <div class="flex flex-col items-end space-y-1">
                       ${training.isNote ? `
                         <div class="text-gray-700 text-right">
-                          ${training.notes}
+                          ${formatNotes(training.notes)}
                         </div>
                       ` : `
                         <div class="text-gray-600 font-mono text-right">
@@ -905,7 +956,7 @@ function renderExerciseList() {
         
         ${exercise.isNote ? `
           <div class="p-3 bg-purple-50 rounded-lg">
-            <p class="text-gray-700">${exercise.notes}</p>
+            <div class="text-gray-700">${formatNotes(exercise.notes)}</div>
           </div>
         ` : `
           <div class="space-y-2">
@@ -995,7 +1046,7 @@ function renderAddExerciseModal() {
               <label class="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
               <textarea id="exercise-notes" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Notizen"></textarea>
+                        placeholder="Notizen (Formatierung: **fett**, *kursiv*, - Listen)"></textarea>
             </div>
             
             <div class="flex space-x-3 pt-4">
@@ -1402,7 +1453,7 @@ function showEditExerciseModal(exercise) {
               <label class="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
               <textarea id="edit-exercise-notes" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Notizen">${exercise.notes || ''}</textarea>
+                        placeholder="Notizen (Formatierung: **fett**, *kursiv*, - Listen)">${exercise.notes || ''}</textarea>
             </div>
             
             <div class="flex space-x-3 pt-4">
@@ -1430,8 +1481,11 @@ function showEditExerciseModal(exercise) {
 
     const id = document.getElementById('edit-exercise-id').value;
     const date = document.getElementById('edit-exercise-date').value;
-    const exerciseName = document.getElementById('edit-exercise-name').value.trim();
     const notes = document.getElementById('edit-exercise-notes').value.trim();
+    
+    // Übungsfeld nur bei Trainings berücksichtigen
+    const exerciseNameElement = document.getElementById('edit-exercise-name');
+    const exerciseName = exerciseNameElement ? exerciseNameElement.value.trim() : '';
     
     // Checkboxen nur bei Trainings berücksichtigen
     const inWorkoutElement = document.getElementById('edit-in-workout');
@@ -1668,7 +1722,7 @@ function showTrainingDetails(exerciseId) {
               ${exercise.notes ? `
                 <div>
                   <h5 class="text-md font-medium text-gray-900 mb-2">Notizen</h5>
-                  <p class="text-gray-600 italic bg-gray-50 p-3 rounded-lg">"${exercise.notes}"</p>
+                  <div class="text-gray-600 italic bg-gray-50 p-3 rounded-lg">${formatNotes(exercise.notes)}</div>
                 </div>
               ` : ''}
             </div>
@@ -2219,3 +2273,5 @@ function addMultipleEditSets(count) {
     addEditSet();
   }
 }
+
+
