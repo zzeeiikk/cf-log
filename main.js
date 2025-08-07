@@ -1046,8 +1046,10 @@ function renderAddExerciseModal() {
               <label class="block text-sm font-medium text-gray-700 mb-1">Notizen</label>
               <textarea id="exercise-notes" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Notizen (Formatierung: **fett**, *kursiv*, - Listen)"></textarea>
+                        placeholder="Notizen"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">✏️ Formatierung: **fett**, *kursiv*, - Listen</p>
             </div>
+
             
             <div class="flex space-x-3 pt-4">
               <button type="button" onclick="hideAddExerciseModal()" 
@@ -1454,7 +1456,9 @@ function showEditExerciseModal(exercise) {
               <textarea id="edit-exercise-notes" rows="3" 
                         class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Notizen (Formatierung: **fett**, *kursiv*, - Listen)">${exercise.notes || ''}</textarea>
-            </div>
+                                    <p class="text-xs text-gray-500 mt-1">✏️ Formatierung: **fett**, *kursiv*, - Listen</p>
+
+                        </div>
             
             <div class="flex space-x-3 pt-4">
               <button type="button" onclick="hideEditExerciseModal()" 
