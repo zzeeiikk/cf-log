@@ -157,8 +157,8 @@ class WebDAVProvider extends StorageProvider {
     try {
       // Versuche zuerst einen einfachen GET-Request ohne OPTIONS
       const res = await fetch(this.url, {
-        method: 'GET',
-        headers: {
+      method: 'GET',
+      headers: {
           'Authorization': 'Basic ' + btoa(`${this.username}:${this.password}`)
         }
       });
@@ -173,7 +173,7 @@ class WebDAVProvider extends StorageProvider {
       } else if (res.status === 404) {
         // Server erreichbar, aber Pfad nicht gefunden
         return true;
-      } else {
+  } else {
         throw new Error(`WebDAV Server nicht erreichbar: ${res.status} ${res.statusText}`);
       }
     } catch (error) {
@@ -530,7 +530,7 @@ function renderOnboarding() {
               <p class="text-xs text-yellow-800 mb-2">Falls CORS-Fehler auftreten, verwende einen CORS-Proxy:</p>
               <div class="text-xs text-yellow-700 font-mono bg-yellow-100 p-2 rounded">
                 https://corsproxy.io/?https://dein-webdav-server.com
-              </div>
+          </div>
             </div>
           </div>
         </div>
@@ -812,7 +812,7 @@ function renderDashboard() {
               <div class="space-y-3">
                 <div class="flex justify-between">
                   <span class="text-gray-600">Gesamt Einträge:</span>
-                  <span class="font-semibold">${appData.exercises.length}</span>
+                  <span class="font-semibold">${getTotalTrainings()}</span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Eindeutige Übungen:</span>
@@ -1227,7 +1227,13 @@ function renderExerciseList() {
   }
 
   return appData.exercises
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .sort((a, b) => {
+      // Zuerst nach Datum sortieren (neueste zuerst)
+      const dateComparison = new Date(b.date) - new Date(a.date);
+      if (dateComparison !== 0) return dateComparison;
+      // Bei gleichem Datum nach ID sortieren (höhere ID = neuer)
+      return parseInt(b.id) - parseInt(a.id);
+    })
     .map(exercise => `
       <div class="p-6 hover:bg-gray-50 transition-colors">
         <div class="flex justify-between items-start mb-3">
@@ -1491,7 +1497,7 @@ function renderSettingsModal() {
               <h4 class="text-sm font-medium text-gray-900 mb-3">Statistiken</h4>
               <div class="grid grid-cols-2 gap-3 text-sm">
                 <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-lg font-bold text-gray-900">${appData.exercises.length}</div>
+                  <div class="text-lg font-bold text-gray-900">${getTotalTrainings()}</div>
                   <div class="text-gray-600">Trainings</div>
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg">
@@ -2399,8 +2405,9 @@ function importData() {
 }
 
 function getLastTrainingDate() {
-  if (appData.exercises.length === 0) return 'Keine';
-  const lastExercise = appData.exercises
+  const trainingExercises = appData.exercises.filter(ex => !ex.isNote);
+  if (trainingExercises.length === 0) return 'Keine';
+  const lastExercise = trainingExercises
     .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
   return formatDate(lastExercise.date);
 }
@@ -2409,19 +2416,27 @@ function getTopExercise() {
   if (appData.exercises.length === 0) return 'Keine';
   const exerciseCounts = {};
   appData.exercises.forEach(ex => {
-    exerciseCounts[ex.exercise] = (exerciseCounts[ex.exercise] || 0) + 1;
+    // Notizen nicht in die Statistik einbeziehen
+    if (!ex.isNote) {
+      exerciseCounts[ex.exercise] = (exerciseCounts[ex.exercise] || 0) + 1;
+    }
   });
-  return Object.entries(exerciseCounts)
-    .sort(([,a], [,b]) => b - a)[0][0];
+  const entries = Object.entries(exerciseCounts);
+  if (entries.length === 0) return 'Keine';
+  return entries.sort(([,a], [,b]) => b - a)[0][0];
 }
 
 function getUniqueExerciseCount() {
-  const uniqueExercises = new Set(appData.exercises.map(ex => ex.exercise));
+  const uniqueExercises = new Set(appData.exercises.filter(ex => !ex.isNote).map(ex => ex.exercise));
   return uniqueExercises.size;
 }
 
 function getTotalSets() {
-  return appData.exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+  return appData.exercises.filter(ex => !ex.isNote).reduce((sum, ex) => sum + ex.sets.length, 0);
+}
+
+function getTotalTrainings() {
+  return appData.exercises.filter(ex => !ex.isNote).length;
 }
 
 function toggleYearComparison() {
@@ -2460,14 +2475,15 @@ function renderYearComparison() {
   
   return sortedYears.map(year => {
     const exercises = yearGroups[year];
-    const totalTrainings = exercises.length;
-    const totalSets = exercises.reduce((sum, ex) => sum + ex.sets.length, 0);
-    const uniqueExercises = new Set(exercises.map(ex => ex.exercise)).size;
-    const is1RMCount = exercises.filter(ex => ex.is1RM).length;
-    const inWorkoutCount = exercises.filter(ex => ex.inWorkout).length;
+    const trainingExercises = exercises.filter(ex => !ex.isNote);
+    const totalTrainings = trainingExercises.length;
+    const totalSets = trainingExercises.reduce((sum, ex) => sum + ex.sets.length, 0);
+    const uniqueExercises = new Set(trainingExercises.map(ex => ex.exercise)).size;
+    const is1RMCount = trainingExercises.filter(ex => ex.is1RM).length;
+    const inWorkoutCount = trainingExercises.filter(ex => ex.inWorkout).length;
     
     // Berechne Durchschnitt pro Monat
-    const months = new Set(exercises.map(ex => ex.date.substring(0, 7))).size;
+    const months = new Set(trainingExercises.map(ex => ex.date.substring(0, 7))).size;
     const avgPerMonth = months > 0 ? (totalTrainings / months).toFixed(1) : 0;
     
     return `
