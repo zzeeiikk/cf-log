@@ -1333,7 +1333,6 @@ function renderAddExerciseModal() {
                 <button type="button" onclick="addSet()" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
                 <button type="button" onclick="addMultipleSets(3)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 3 Sets</button>
                 <button type="button" onclick="addMultipleSets(5)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 5 Sets</button>
-                <button type="button" onclick="addMultipleSets(7)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
               </div>
             </div>
             
@@ -1763,6 +1762,7 @@ function showEditExerciseModal(exercise) {
               <label class="block text-sm font-medium text-gray-700 mb-1">Sets</label>
               <div id="edit-sets-container" class="space-y-2">
                 ${exercise.sets.map((set, index) => `
+                  ${index > 0 ? '<div class="set-divider h-px bg-gray-300 my-2"></div>' : ''}
                   <div class="edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center">
                     <div class="text-sm font-medium text-gray-600 text-center">${index + 1}</div>
                     <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" value="${set.reps}" required>
@@ -1776,7 +1776,6 @@ function showEditExerciseModal(exercise) {
                 <button type="button" onclick="addEditSet()" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
                 <button type="button" onclick="addMultipleEditSets(3)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 3 Sets</button>
                 <button type="button" onclick="addMultipleEditSets(5)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 5 Sets</button>
-                <button type="button" onclick="addMultipleEditSets(7)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
               </div>
             </div>
             `}
@@ -1918,6 +1917,13 @@ function addEditSet() {
     lastNotes = inputs[2].value;
   }
   
+  // Divider hinzufügen (außer beim ersten Set)
+  if (existingSets.length > 0) {
+    const dividerDiv = document.createElement('div');
+    dividerDiv.className = 'set-divider h-px bg-gray-300 my-2';
+    container.appendChild(dividerDiv);
+  }
+  
   const setDiv = document.createElement('div');
   setDiv.className = 'edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
   setDiv.innerHTML = `
@@ -1934,7 +1940,22 @@ function addEditSet() {
 }
 
 function removeEditSet(button) {
-  button.parentElement.remove();
+  const setRow = button.parentElement;
+  const container = document.getElementById('edit-sets-container');
+  
+  // Entferne das Set
+  setRow.remove();
+  
+  // Entferne Divider, die nicht mehr benötigt werden
+  const dividers = container.querySelectorAll('.set-divider');
+  dividers.forEach((divider, index) => {
+    // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
+    const nextElement = divider.nextElementSibling;
+    if (!nextElement || !nextElement.classList.contains('edit-set-row')) {
+      divider.remove();
+    }
+  });
+  
   updateEditSetNumbers();
 }
 
@@ -2269,6 +2290,13 @@ function addSet() {
     lastNotes = inputs[2].value;
   }
   
+  // Divider hinzufügen (außer beim ersten Set)
+  if (existingSets.length > 0) {
+    const dividerDiv = document.createElement('div');
+    dividerDiv.className = 'set-divider h-px bg-gray-300 my-2';
+    container.appendChild(dividerDiv);
+  }
+  
   const setDiv = document.createElement('div');
   setDiv.className = 'set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
   setDiv.innerHTML = `
@@ -2296,7 +2324,22 @@ function updateSetNumbers() {
 }
 
 function removeSet(button) {
-  button.parentElement.remove();
+  const setRow = button.parentElement;
+  const container = document.getElementById('sets-container');
+  
+  // Entferne das Set
+  setRow.remove();
+  
+  // Entferne Divider, die nicht mehr benötigt werden
+  const dividers = container.querySelectorAll('.set-divider');
+  dividers.forEach((divider, index) => {
+    // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
+    const nextElement = divider.nextElementSibling;
+    if (!nextElement || !nextElement.classList.contains('set-row')) {
+      divider.remove();
+    }
+  });
+  
   updateSetNumbers();
 }
 
