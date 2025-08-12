@@ -657,6 +657,96 @@
       "notes": "",
       "is1RM": false,
       "inWorkout": true
+    },
+    {
+      "id": "52",
+      "exercise": "Notiz",
+      "date": "2025-01-10",
+      "sets": [],
+      "notes": "Heute war ein super Training! Fühle mich viel stärker als vor einem Monat. Die Technik beim Clean wird immer besser.",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "53",
+      "exercise": "Notiz",
+      "date": "2024-12-25",
+      "sets": [],
+      "notes": "Weihnachtstraining! 🎄\n\n- Heute nur leichtes Training gemacht\n- Familie ist da, daher kürzer\n- Morgen wieder volles Programm",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "54",
+      "exercise": "Notiz",
+      "date": "2024-11-15",
+      "sets": [],
+      "notes": "Verletzung am rechten Handgelenk\n\n**Symptome:**\n- Schmerzen beim Handstand\n- Schwierigkeiten beim Snatch\n\n**Maßnahmen:**\n- 2 Wochen Pause für Handgelenk-Übungen\n- Fokus auf Beine und Core\n- Physiotherapie vereinbart",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "55",
+      "exercise": "Notiz",
+      "date": "2024-10-08",
+      "sets": [],
+      "notes": "Neue Trainingsziele für Q4 2024:\n\n- **Back Squat:** 160kg 1RM\n- **Deadlift:** 170kg 1RM\n- **Clean:** 100kg 1RM\n- **Snatch:** 95kg 1RM\n- **Strict Press:** 75kg 1RM\n\nFokus auf Technik und konsistente Progression!",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "56",
+      "exercise": "Notiz",
+      "date": "2024-09-20",
+      "sets": [],
+      "notes": "Ernährung angepasst:\n\n- Mehr Protein (2g/kg Körpergewicht)\n- Kreatin-Supplementation begonnen\n- Hydration verbessert (3L Wasser/Tag)\n- Pre-Workout: Kaffee + BCAA\n\nFühle mich energiegeladener!",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "57",
+      "exercise": "Notiz",
+      "date": "2024-08-12",
+      "sets": [],
+      "notes": "Urlaub in den Bergen - 2 Wochen Pause\n\n**Aktivitäten:**\n- Wandern (5-8 Stunden/Tag)\n- Klettern (3x)\n- Schwimmen im Bergsee\n\nTrotz Pause fühle ich mich fit und erholt!",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "58",
+      "exercise": "Notiz",
+      "date": "2024-07-01",
+      "sets": [],
+      "notes": "Halbjahres-Review:\n\n**Erreicht:**\n✅ Back Squat: 150kg (Ziel: 145kg)\n✅ Deadlift: 160kg (Ziel: 155kg)\n✅ Clean: 95kg (Ziel: 90kg)\n\n**Verbesserungspotential:**\n❌ Snatch: 85kg (Ziel: 90kg)\n❌ Strict Press: 65kg (Ziel: 70kg)\n\nFokus Q3: Technik beim Snatch!",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "59",
+      "exercise": "Notiz",
+      "date": "2024-06-15",
+      "sets": [],
+      "notes": "Neue Trainingspartnerin: Anna\n\n- Sehr motiviert und technisch versiert\n- Gemeinsames Training 3x pro Woche\n- Gute Ergänzung für Partner-Übungen\n- Wettkampf-Atmosphäre hilft bei Motivation",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
+    },
+    {
+      "id": "60",
+      "exercise": "Notiz",
+      "date": "2024-05-03",
+      "sets": [],
+      "notes": "Gym-Equipment Upgrade:\n\n- Neue Gewichtsscheiben (20kg, 25kg)\n- Gymnastik-Ringe installiert\n- Kettlebell-Set (16kg, 24kg, 32kg)\n- Mobility-Bereich erweitert\n\nJetzt kann ich endlich alle Übungen machen!",
+      "is1RM": false,
+      "inWorkout": false,
+      "isNote": true
     }
   ]
 } 
