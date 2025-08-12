@@ -4,6 +4,191 @@
 const FILE_NAME = 'cf-log.json';
 const GITHUB_API = 'https://api.github.com';
 
+// Storage Provider Interface
+class StorageProvider {
+  async save(data) { throw new Error('save() must be implemented'); }
+  async load() { throw new Error('load() must be implemented'); }
+  async create(data) { throw new Error('create() must be implemented'); }
+  async delete() { throw new Error('delete() must be implemented'); }
+  async testConnection() { throw new Error('testConnection() must be implemented'); }
+}
+
+// GitHub Gists Storage Provider
+class GitHubGistProvider extends StorageProvider {
+  constructor(token, gistId = null) {
+    super();
+    this.token = token;
+    this.gistId = gistId;
+  }
+
+  async create(data) {
+    const res = await fetch(`${GITHUB_API}/gists`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `token ${this.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        description: 'cf-log Trainingsdaten',
+        public: false,
+        files: { [FILE_NAME]: { content: JSON.stringify(data, null, 2) } }
+      })
+    });
+    if (!res.ok) throw new Error('Gist konnte nicht erstellt werden.');
+    const json = await res.json();
+    this.gistId = json.id;
+    return json.id;
+  }
+
+  async load() {
+    if (!this.gistId) throw new Error('Keine Gist-ID verfügbar');
+    const res = await fetch(`${GITHUB_API}/gists/${this.gistId}`, {
+      headers: { 'Authorization': `token ${this.token}` }
+    });
+    if (!res.ok) throw new Error('Gist konnte nicht geladen werden.');
+    const json = await res.json();
+    return JSON.parse(json.files[FILE_NAME].content);
+  }
+
+  async save(data) {
+    if (!this.gistId) throw new Error('Keine Gist-ID verfügbar');
+    const res = await fetch(`${GITHUB_API}/gists/${this.gistId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `token ${this.token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        files: { [FILE_NAME]: { content: JSON.stringify(data, null, 2) } }
+      })
+    });
+    if (!res.ok) throw new Error('Gist konnte nicht aktualisiert werden.');
+  }
+
+  async delete() {
+    if (!this.gistId) throw new Error('Keine Gist-ID verfügbar');
+    const res = await fetch(`${GITHUB_API}/gists/${this.gistId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `token ${this.token}` }
+    });
+    if (!res.ok) throw new Error('Gist konnte nicht gelöscht werden.');
+  }
+
+  async testConnection() {
+    try {
+      const res = await fetch(`${GITHUB_API}/user`, {
+        headers: { 'Authorization': `token ${this.token}` }
+      });
+      if (!res.ok) throw new Error('Token ungültig');
+      return true;
+    } catch (error) {
+      throw new Error('Verbindung zu GitHub fehlgeschlagen: ' + error.message);
+    }
+  }
+}
+
+// WebDAV Storage Provider
+class WebDAVProvider extends StorageProvider {
+  constructor(url, username, password, filename = FILE_NAME) {
+    super();
+    this.url = url.endsWith('/') ? url : url + '/';
+    this.username = username;
+    this.password = password;
+    this.filename = filename;
+    this.fileUrl = this.url + this.filename;
+  }
+
+  async create(data) {
+    // Bei WebDAV ist create() das gleiche wie save()
+    return await this.save(data);
+  }
+
+  async load() {
+    const res = await fetch(this.fileUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${this.username}:${this.password}`)
+      }
+    });
+    
+    if (res.status === 404) {
+      throw new Error('Datei nicht gefunden. Erstelle neue Datei...');
+    }
+    
+    if (!res.ok) {
+      throw new Error(`WebDAV Fehler: ${res.status} ${res.statusText}`);
+    }
+    
+    const content = await res.text();
+    return JSON.parse(content);
+  }
+
+  async save(data) {
+    const content = JSON.stringify(data, null, 2);
+    const res = await fetch(this.fileUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${this.username}:${this.password}`),
+        'Content-Type': 'application/json',
+        'Content-Length': content.length.toString()
+      },
+      body: content
+    });
+    
+    if (!res.ok) {
+      throw new Error(`WebDAV Fehler beim Speichern: ${res.status} ${res.statusText}`);
+    }
+  }
+
+  async delete() {
+    const res = await fetch(this.fileUrl, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Basic ' + btoa(`${this.username}:${this.password}`)
+      }
+    });
+    
+    if (!res.ok && res.status !== 404) {
+      throw new Error(`WebDAV Fehler beim Löschen: ${res.status} ${res.statusText}`);
+    }
+  }
+
+  async testConnection() {
+    try {
+      // Versuche zuerst einen einfachen GET-Request ohne OPTIONS
+      const res = await fetch(this.url, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Basic ' + btoa(`${this.username}:${this.password}`)
+        }
+      });
+      
+      // Akzeptiere verschiedene Status-Codes als "Server erreichbar"
+      if (res.status === 401 || res.status === 403) {
+        // Server ist erreichbar, aber Auth fehlt oder ist falsch
+        return true;
+      } else if (res.status >= 200 && res.status < 300) {
+        // Erfolgreiche Verbindung
+        return true;
+      } else if (res.status === 404) {
+        // Server erreichbar, aber Pfad nicht gefunden
+        return true;
+      } else {
+        throw new Error(`WebDAV Server nicht erreichbar: ${res.status} ${res.statusText}`);
+      }
+    } catch (error) {
+      // Bei CORS-Fehlern, versuche es mit einem einfacheren Test
+      if (error.message.includes('CORS') || error.message.includes('access control')) {
+        throw new Error('CORS-Fehler: Verwende einen CORS-Proxy. Beispiel: https://corsproxy.io/?https://dein-webdav-server.com');
+      }
+      throw new Error('WebDAV Verbindung fehlgeschlagen: ' + error.message);
+    }
+  }
+}
+
+// Globaler Storage Provider
+let currentStorageProvider = null;
+
 // Datenstruktur
 let appData = {
   user: {
@@ -194,106 +379,112 @@ function formatSetsIntelligently(sets) {
   }
 }
 
-// GitHub Gist Functions
+// Storage Provider Helper Functions
+async function createStorageProvider(type, config) {
+  switch (type) {
+    case 'github':
+      return new GitHubGistProvider(config.token, config.gistId);
+    case 'webdav':
+      return new WebDAVProvider(config.url, config.username, config.password, config.filename);
+    default:
+      throw new Error(`Unbekannter Storage-Typ: ${type}`);
+  }
+}
+
+async function testStorageConnection(type, config) {
+  const provider = await createStorageProvider(type, config);
+  return await provider.testConnection();
+}
+
+// Legacy functions for backward compatibility
 async function createGist(token, data) {
-  const res = await fetch(`${GITHUB_API}/gists`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `token ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      description: 'cf-log Trainingsdaten',
-      public: false,
-      files: { [FILE_NAME]: { content: JSON.stringify(data, null, 2) } }
-    })
-  });
-  if (!res.ok) throw new Error('Gist konnte nicht erstellt werden.');
-  const json = await res.json();
-  return json.id;
+  const provider = new GitHubGistProvider(token);
+  return await provider.create(data);
 }
 
 async function loadGist(token, gistId) {
-  const res = await fetch(`${GITHUB_API}/gists/${gistId}`, {
-    headers: { 'Authorization': `token ${token}` }
-  });
-  if (!res.ok) throw new Error('Gist konnte nicht geladen werden.');
-  const json = await res.json();
-  return JSON.parse(json.files[FILE_NAME].content);
+  const provider = new GitHubGistProvider(token, gistId);
+  return await provider.load();
 }
 
 async function updateGist(token, gistId, data) {
-  const res = await fetch(`${GITHUB_API}/gists/${gistId}`, {
-    method: 'PATCH',
-    headers: {
-      'Authorization': `token ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      files: { [FILE_NAME]: { content: JSON.stringify(data, null, 2) } }
-    })
-  });
-  if (!res.ok) throw new Error('Gist konnte nicht aktualisiert werden.');
+  const provider = new GitHubGistProvider(token, gistId);
+  return await provider.save(data);
 }
 
 // UI Functions
 function renderOnboarding() {
   document.getElementById('app').innerHTML = `
     <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+      <div class="max-w-lg w-full bg-white rounded-2xl shadow-xl p-8">
         <div class="text-center mb-8">
           <img src="cf-log.jpg" alt="cf-log Logo" class="w-20 h-20 mx-auto mb-4 rounded-lg">
           <h1 class="text-3xl font-bold text-gray-900 mb-2">cf-log</h1>
-          <p class="text-gray-600">Dein flexibles Trainingslog mit GitHub Gists</p>
+          <p class="text-gray-600">Dein flexibles Trainingslog</p>
         </div>
 
+        <!-- Storage Type Selector -->
+        <div class="mb-6">
+          <h2 class="text-center font-semibold text-gray-900 mt-3 mb-3">Speichermethode wählen</h2>
 
+          <div class="grid grid-cols-2 gap-3">
+            <button type="button" id="storage-github" class="storage-option border-2 p-4 rounded-lg text-left transition-colors border-blue-500 bg-blue-100" data-type="github">
+              <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <div>
+                  <div class="font-medium text-gray-900">GitHub Gists</div>
+                  <div class="text-sm text-gray-600">Kostenlos & sicher</div>
+                </div>
+              </div>
+            </button>
+            <button type="button" id="storage-webdav" class="storage-option bg-green-50 border-2 border-green-200 p-4 rounded-lg text-left transition-colors" data-type="webdav">
+              <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+                <div>
+                  <div class="font-medium text-gray-900">WebDAV</div>
+                  <div class="text-sm text-gray-600">Eigener Server</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
 
-
-        <h2 class="text-center font-semibold text-gray-900 mt-3 mb-3">Einloggen</h2>
+        <!-- GitHub Login Form -->
+        <div id="github-form" class="storage-form">
         <form id="login-form" class="space-y-4 mb-6 mt-6">
-          <input type="text" name="gist_id" placeholder="Gist-ID (optional)" 
+            <input type="text" name="gist_id" placeholder="Gist-ID (optional)" 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-          <input type="password" name="token" placeholder="GitHub Token" required 
+            <input type="password" name="token" placeholder="GitHub Token" required 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <button type="submit" 
-                  class="w-full bg-gray-400 hover:bg-gray-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
             Einloggen
           </button>
         </form>
 
-                <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
+          <div class="mb-8 mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-semibold text-blue-900 mb-3">GitHub Token erstellen:</h3>
+            <div class="flex justify-center mb-3">
+              <a href="https://github.com/settings/tokens" target="_blank" 
+                 class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
+                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
+                </svg>
+                GitHub Token erstellen
+              </a>
           </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500">oder</span>
-          </div>
+            <ol class="text-sm text-blue-800 space-y-1">
+              <li>1. Klicke auf "Generate new token (classic)"</li>
+              <li>2. Vergib einen Namen und Ablaufdatum</li>
+              <li>3. Setze <span class="font-mono bg-blue-200 px-1 rounded">nur</span> das Häkchen bei <span class="font-mono bg-blue-200 px-1 rounded">gist</span></li>
+              <li>4. Klicke "Generate token" und kopiere den Token</li>
+            </ol>
         </div>
-
-        <h2 class="text-center font-semibold text-gray-900 mt-3 mb-3">Neues Profil anlegen</h2>
-        <div class="mb-8 mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 class="font-semibold text-blue-900 mb-3">GitHub Token erstellen:</h3>
-          <div class="flex justify-center mb-3">
-            <a href="https://github.com/settings/tokens" target="_blank" 
-               class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
-              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"/>
-                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"/>
-              </svg>
-              GitHub Token erstellen
-            </a>
-          </div>
-          <ol class="text-sm text-blue-800 space-y-1">
-            <li>1. Klicke auf "Generate new token (classic)"</li>
-            <li>2. Vergib einen Namen und Ablaufdatum</li>
-            <li>3. Setze <span class="font-mono bg-blue-200 px-1 rounded">nur</span> das Häkchen bei <span class="font-mono bg-blue-200 px-1 rounded">gist</span></li>
-            <li>4. Klicke "Generate token" und kopiere den Token</li>
-          </ol>
-        </div>
-
-
-
 
         <form id="onboarding-form" class="space-y-4 mb-6">
           <input type="text" name="name" placeholder="Dein Name" required 
@@ -301,21 +492,48 @@ function renderOnboarding() {
           <input type="password" name="token" placeholder="GitHub Token" required 
                  class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
           <button type="submit" 
-                  class="w-full bg-blue-400 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
             Neues Profil anlegen
           </button>
         </form>
-        
-
-        <div class="relative">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-gray-300"></div>
-          </div>
-          <div class="relative flex justify-center text-sm">
-            <span class="px-2 bg-white text-gray-500"></span>
-          </div>
         </div>
 
+        <!-- WebDAV Login Form -->
+        <div id="webdav-form" class="storage-form hidden">
+          <form id="webdav-login-form" class="space-y-4 mb-6 mt-6">
+            <input type="url" name="url" placeholder="WebDAV URL (z.B. https://webdav.example.com/)" required 
+                   class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <input type="text" name="username" placeholder="Benutzername" required 
+                   class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <input type="password" name="password" placeholder="Passwort" required 
+                   class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <input type="text" name="filename" placeholder="Dateiname (optional, Standard: cf-log.json)" 
+                   class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
+            <button type="submit" 
+                    class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+              Verbinden
+            </button>
+          </form>
+
+          <div class="mb-8 mt-6 p-4 bg-green-50 rounded-lg">
+            <h3 class="font-semibold text-green-900 mb-3">WebDAV Server:</h3>
+            <p class="text-sm text-green-800 mb-3">Unterstützte WebDAV Server:</p>
+            <ul class="text-sm text-green-800 space-y-1">
+              <li>• Nextcloud / ownCloud</li>
+              <li>• Synology NAS</li>
+              <li>• QNAP NAS</li>
+              <li>• Jeder WebDAV-kompatible Server</li>
+            </ul>
+            
+            <div class="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h4 class="font-medium text-yellow-900 mb-2">⚠️ CORS-Problem?</h4>
+              <p class="text-xs text-yellow-800 mb-2">Falls CORS-Fehler auftreten, verwende einen CORS-Proxy:</p>
+              <div class="text-xs text-yellow-700 font-mono bg-yellow-100 p-2 rounded">
+                https://corsproxy.io/?https://dein-webdav-server.com
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Demo Button -->
         <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
@@ -325,7 +543,7 @@ function renderOnboarding() {
               <p class="text-sm text-purple-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
             </div>
             <button type="button" id="demo-btn" 
-                    class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
               Demo starten
             </button>
           </div>
@@ -334,7 +552,48 @@ function renderOnboarding() {
     </div>
   `;
 
-  // Event Listeners
+  // Storage Type Selector Event Listeners
+  document.querySelectorAll('.storage-option').forEach(button => {
+    button.addEventListener('click', () => {
+      const type = button.dataset.type;
+      
+      // Alle Storage Options zurücksetzen
+      document.querySelectorAll('.storage-option').forEach(btn => {
+        const btnType = btn.dataset.type;
+        if (btnType === 'github') {
+          // GitHub Button zurücksetzen
+          btn.classList.remove('border-blue-500', 'bg-blue-100');
+          btn.classList.add('border-blue-200', 'bg-blue-50');
+        } else if (btnType === 'webdav') {
+          // WebDAV Button zurücksetzen
+          btn.classList.remove('border-green-500', 'bg-green-100');
+          btn.classList.add('border-green-200', 'bg-green-50');
+        }
+      });
+      
+      // Ausgewählte Option hervorheben
+      if (type === 'github') {
+        button.classList.remove('border-blue-200', 'bg-blue-50');
+        button.classList.add('border-blue-500', 'bg-blue-100');
+      } else if (type === 'webdav') {
+        button.classList.remove('border-green-200', 'bg-green-50');
+        button.classList.add('border-green-500', 'bg-green-100');
+      }
+      
+      // Formulare ein-/ausblenden
+      document.querySelectorAll('.storage-form').forEach(form => {
+        form.classList.add('hidden');
+      });
+      
+      if (type === 'github') {
+        document.getElementById('github-form').classList.remove('hidden');
+      } else if (type === 'webdav') {
+        document.getElementById('webdav-form').classList.remove('hidden');
+      }
+    });
+  });
+
+  // GitHub Event Listeners
   document.getElementById('onboarding-form').onsubmit = async (e) => {
     e.preventDefault();
     const name = e.target.name.value.trim();
@@ -344,10 +603,11 @@ function renderOnboarding() {
     try {
       appData.user.name = name;
       const gistId = await createGist(token, appData);
+      localStorage.setItem('cf_log_storage_type', 'github');
       localStorage.setItem('cf_log_token', token);
       localStorage.setItem('cf_log_gist_id', gistId);
       localStorage.setItem('cf_log_user_name', name);
-  window.location.reload();
+      window.location.reload();
     } catch (err) {
       showNotification('Fehler: ' + err.message, 'error');
     }
@@ -357,13 +617,14 @@ function renderOnboarding() {
     e.preventDefault();
     const gistId = e.target.gist_id.value.trim();
     const token = e.target.token.value.trim();
-    if (!token) return;
-    
+        if (!token) return;
+        
     try {
       if (gistId) {
         // Bestehenden Gist laden
         const data = await loadGist(token, gistId);
         appData = { ...appData, ...data };
+        localStorage.setItem('cf_log_storage_type', 'github');
         localStorage.setItem('cf_log_token', token);
         localStorage.setItem('cf_log_gist_id', gistId);
         localStorage.setItem('cf_log_user_name', appData.user.name);
@@ -371,6 +632,7 @@ function renderOnboarding() {
         // Neuen Gist erstellen
         appData.user.name = 'Benutzer';
         const newGistId = await createGist(token, appData);
+        localStorage.setItem('cf_log_storage_type', 'github');
         localStorage.setItem('cf_log_token', token);
         localStorage.setItem('cf_log_gist_id', newGistId);
         localStorage.setItem('cf_log_user_name', appData.user.name);
@@ -378,6 +640,44 @@ function renderOnboarding() {
       window.location.reload();
     } catch (err) {
       showNotification('Fehler: ' + err.message, 'error');
+    }
+  };
+
+  // WebDAV Event Listener
+  document.getElementById('webdav-login-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const url = e.target.url.value.trim();
+    const username = e.target.username.value.trim();
+    const password = e.target.password.value.trim();
+    const filename = e.target.filename.value.trim() || FILE_NAME;
+    
+    if (!url || !username || !password) return;
+    
+    try {
+      // WebDAV Verbindung testen
+      const provider = new WebDAVProvider(url, username, password, filename);
+      await provider.testConnection();
+      
+      // Versuche existierende Daten zu laden oder erstelle neue
+      try {
+        const data = await provider.load();
+        appData = { ...appData, ...data };
+      } catch (loadError) {
+        // Datei existiert nicht, erstelle neue
+        appData.user.name = username;
+        await provider.save(appData);
+      }
+      
+      localStorage.setItem('cf_log_storage_type', 'webdav');
+      localStorage.setItem('cf_log_webdav_url', url);
+      localStorage.setItem('cf_log_webdav_username', username);
+      localStorage.setItem('cf_log_webdav_password', password);
+      localStorage.setItem('cf_log_webdav_filename', filename);
+      localStorage.setItem('cf_log_user_name', appData.user.name);
+      
+      window.location.reload();
+    } catch (err) {
+      showNotification('WebDAV Fehler: ' + err.message, 'error');
     }
   };
 
@@ -1111,36 +1411,73 @@ function renderSettingsModal() {
               </div>
             </div>
             
-            <!-- Login-Daten -->
+            <!-- Storage-Informationen -->
             <div class="border-t border-gray-200 pt-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Login-Daten</h4>
+              <h4 class="text-sm font-medium text-gray-900 mb-3">Speicher-Informationen</h4>
               <div class="space-y-3 text-sm">
+                ${(() => {
+                  const storageType = localStorage.getItem('cf_log_storage_type');
+                  if (storageType === 'github') {
+                    return `
                 <div class="bg-blue-50 p-3 rounded-lg">
-                  <div class="font-medium text-blue-900 mb-1">Gist-ID</div>
-                  <div class="text-blue-700 font-mono break-all">${localStorage.getItem('cf_log_gist_id') || 'Nicht verfügbar'}</div>
+                        <div class="flex items-center gap-2 mb-2">
+                          <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                          </svg>
+                          <span class="font-medium text-blue-900">GitHub Gists</span>
+                        </div>
+                        <div class="text-blue-700 font-mono break-all mb-2">Gist-ID: ${localStorage.getItem('cf_log_gist_id') || 'Nicht verfügbar'}</div>
+                        <div class="text-blue-700 font-mono break-all mb-2">Token: ${localStorage.getItem('cf_log_token') ? 
+                          localStorage.getItem('cf_log_token').substring(0, 8) + '••••••••••••••••' : 
+                          'Nicht verfügbar'}</div>
+                        <div class="flex space-x-2">
                   <button onclick="copyToClipboard('${localStorage.getItem('cf_log_gist_id') || ''}')" 
-                          class="text-blue-600 hover:text-blue-800 text-xs mt-1">
-                    📋 Kopieren
+                                  class="text-blue-600 hover:text-blue-800 text-xs">
+                            📋 Gist-ID kopieren
+                          </button>
+                          <button onclick="copyToClipboard('${localStorage.getItem('cf_log_token') || ''}')" 
+                                  class="text-blue-600 hover:text-blue-800 text-xs">
+                            📋 Token kopieren
+                          </button>
+                          <button onclick="toggleTokenVisibility()" 
+                                  class="text-blue-600 hover:text-blue-800 text-xs">
+                            👁️ Token anzeigen
                   </button>
                 </div>
+                      </div>
+                    `;
+                  } else if (storageType === 'webdav') {
+                    return `
                 <div class="bg-green-50 p-3 rounded-lg">
-                  <div class="font-medium text-green-900 mb-1">GitHub Token</div>
-                  <div class="text-green-700 font-mono break-all">
-                    ${localStorage.getItem('cf_log_token') ? 
-                      localStorage.getItem('cf_log_token').substring(0, 8) + '••••••••••••••••' : 
-                      'Nicht verfügbar'}
+                        <div class="flex items-center gap-2 mb-2">
+                          <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                          </svg>
+                          <span class="font-medium text-green-900">WebDAV</span>
                   </div>
-                  <div class="flex space-x-2 mt-1">
-                    <button onclick="copyToClipboard('${localStorage.getItem('cf_log_token') || ''}')" 
+                        <div class="text-green-700 font-mono break-all mb-2">URL: ${localStorage.getItem('cf_log_webdav_url') || 'Nicht verfügbar'}</div>
+                        <div class="text-green-700 font-mono break-all mb-2">Benutzer: ${localStorage.getItem('cf_log_webdav_username') || 'Nicht verfügbar'}</div>
+                        <div class="text-green-700 font-mono break-all mb-2">Datei: ${localStorage.getItem('cf_log_webdav_filename') || FILE_NAME}</div>
+                        <div class="flex space-x-2">
+                          <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_url') || ''}')" 
                             class="text-green-600 hover:text-green-800 text-xs">
-                      📋 Kopieren
+                            📋 URL kopieren
                     </button>
-                    <button onclick="toggleTokenVisibility()" 
+                          <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_username') || ''}')" 
                             class="text-green-600 hover:text-green-800 text-xs">
-                      👁️ Anzeigen
+                            📋 Benutzer kopieren
                     </button>
                   </div>
                 </div>
+                    `;
+                  } else {
+                    return `
+                      <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-gray-700">Keine Speichermethode konfiguriert</div>
+                      </div>
+                    `;
+                  }
+                })()}
                 <div class="bg-yellow-50 p-3 rounded-lg">
                   <div class="text-yellow-800 text-xs">
                     💡 <strong>Tipp:</strong> Speichere diese Daten sicher ab! Ohne sie kannst du dich nicht wieder einloggen.
@@ -2171,8 +2508,7 @@ function renderYearComparison() {
 }
 
 async function saveData() {
-  const token = localStorage.getItem('cf_log_token');
-  const gistId = localStorage.getItem('cf_log_gist_id');
+  const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
   const demoMode = localStorage.getItem('cf_log_demo_mode');
   
   // Im Demo-Modus keine Daten speichern
@@ -2181,10 +2517,13 @@ async function saveData() {
     return;
   }
   
-  if (!token || !gistId) return;
+  if (!currentStorageProvider) {
+    showNotification('Kein Storage Provider konfiguriert', 'error');
+    return;
+  }
   
   try {
-    await updateGist(token, gistId, appData);
+    await currentStorageProvider.save(appData);
   } catch (error) {
     showNotification('Fehler beim Speichern: ' + error.message, 'error');
   }
@@ -2207,8 +2546,7 @@ function showNotification(message, type = 'info') {
 }
 
 function logout() {
-  const token = localStorage.getItem('cf_log_token');
-  const gistId = localStorage.getItem('cf_log_gist_id');
+  const storageType = localStorage.getItem('cf_log_storage_type');
   const demoMode = localStorage.getItem('cf_log_demo_mode');
   
   if (demoMode === 'true') {
@@ -2224,13 +2562,32 @@ function logout() {
   let message = 'Möchtest du dich wirklich abmelden?\n\n';
   message += '⚠️ Wichtiger Hinweis:\n';
   message += 'Speichere dir deine Login-Daten:\n';
-  message += `• Gist-ID: ${gistId}\n`;
-  message += `• GitHub Token: ${token ? token.substring(0, 8) + '...' : 'Nicht verfügbar'}\n\n`;
-  message += 'Ohne diese Daten kannst du dich nicht wieder einloggen!';
+  
+  if (storageType === 'github') {
+    const token = localStorage.getItem('cf_log_token');
+    const gistId = localStorage.getItem('cf_log_gist_id');
+    message += `• Gist-ID: ${gistId}\n`;
+    message += `• GitHub Token: ${token ? token.substring(0, 8) + '...' : 'Nicht verfügbar'}\n`;
+  } else if (storageType === 'webdav') {
+    const url = localStorage.getItem('cf_log_webdav_url');
+    const username = localStorage.getItem('cf_log_webdav_username');
+    const filename = localStorage.getItem('cf_log_webdav_filename');
+    message += `• WebDAV URL: ${url}\n`;
+    message += `• Benutzername: ${username}\n`;
+    message += `• Dateiname: ${filename}\n`;
+  }
+  
+  message += '\nOhne diese Daten kannst du dich nicht wieder einloggen!';
   
   if (confirm(message)) {
+    // Alle Storage-spezifischen Daten löschen
+    localStorage.removeItem('cf_log_storage_type');
     localStorage.removeItem('cf_log_token');
     localStorage.removeItem('cf_log_gist_id');
+    localStorage.removeItem('cf_log_webdav_url');
+    localStorage.removeItem('cf_log_webdav_username');
+    localStorage.removeItem('cf_log_webdav_password');
+    localStorage.removeItem('cf_log_webdav_filename');
     localStorage.removeItem('cf_log_user_name');
     window.location.reload();
   }
@@ -2238,8 +2595,7 @@ function logout() {
 
 // Main function
 async function main() {
-  const token = localStorage.getItem('cf_log_token');
-  const gistId = localStorage.getItem('cf_log_gist_id');
+  const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
   const demoMode = localStorage.getItem('cf_log_demo_mode');
   
   // Demo-Modus prüfen
@@ -2248,13 +2604,37 @@ async function main() {
     return;
   }
   
+  // Storage Provider initialisieren
+  try {
+    if (storageType === 'github') {
+      const token = localStorage.getItem('cf_log_token');
+      const gistId = localStorage.getItem('cf_log_gist_id');
+  
   if (!token || !gistId) {
     renderOnboarding();
     return;
   }
   
-  try {
-    const data = await loadGist(token, gistId);
+      currentStorageProvider = new GitHubGistProvider(token, gistId);
+    } else if (storageType === 'webdav') {
+      const url = localStorage.getItem('cf_log_webdav_url');
+      const username = localStorage.getItem('cf_log_webdav_username');
+      const password = localStorage.getItem('cf_log_webdav_password');
+      const filename = localStorage.getItem('cf_log_webdav_filename') || FILE_NAME;
+      
+      if (!url || !username || !password) {
+        renderOnboarding();
+        return;
+      }
+      
+      currentStorageProvider = new WebDAVProvider(url, username, password, filename);
+    } else {
+      renderOnboarding();
+      return;
+    }
+    
+    // Daten laden
+    const data = await currentStorageProvider.load();
     appData = { ...appData, ...data };
     renderDashboard();
   } catch (err) {

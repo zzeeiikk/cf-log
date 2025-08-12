@@ -1,10 +1,10 @@
 # 🏋️‍♂️ cf-log - Flexibles Trainingslog
 
-Ein modernes, flexibles Trainingslog mit GitHub Gists als Datenspeicher. Kein Backend, keine Anmeldung nötig - deine Daten gehören dir!
+Ein modernes, flexibles Trainingslog mit GitHub Gists oder WebDAV als Datenspeicher. Kein Backend, keine Anmeldung nötig - deine Daten gehören dir!
 
 ## ✨ Features
 
-- **🔐 Sichere Datenspeicherung** über GitHub Gists
+- **🔐 Sichere Datenspeicherung** über GitHub Gists oder WebDAV
 - **📱 Responsive Design** für Desktop und Mobile
 - **🎨 Moderne UI** mit Tailwind CSS
 - **📊 Statistiken** und Übersichten
@@ -35,7 +35,9 @@ Ein modernes, flexibles Trainingslog mit GitHub Gists als Datenspeicher. Kein Ba
 
 ## 🚀 Schnellstart
 
-### 1. GitHub Token erstellen
+### Option 1: GitHub Gists
+
+#### 1. GitHub Token erstellen
 
 1. Gehe zu [GitHub Settings > Tokens](https://github.com/settings/tokens)
 2. Klicke auf "Generate new token (classic)"
@@ -43,12 +45,33 @@ Ein modernes, flexibles Trainingslog mit GitHub Gists als Datenspeicher. Kein Ba
 4. Setze **nur** das Häkchen bei `gist`
 5. Klicke "Generate token" und kopiere den Token
 
-### 2. Anwendung starten
+#### 2. Anwendung starten
 
 1. Öffne `index.html` in deinem Browser
-2. Gib deinen Namen und GitHub Token ein
-3. Klicke "Neues Profil anlegen"
-4. Fertig! 🎉
+2. Wähle "GitHub Gists" als Speichermethode
+3. Gib deinen Namen und GitHub Token ein
+4. Klicke "Neues Profil anlegen"
+5. Fertig! 🎉
+
+### Option 2: WebDAV
+
+#### 1. WebDAV Server einrichten
+
+Unterstützte WebDAV Server:
+- **Nextcloud / ownCloud** (kostenlos, selbst gehostet)
+- **Synology NAS** (WebDAV aktivieren)
+- **QNAP NAS** (WebDAV aktivieren)
+- **Dropbox** (mit WebDAV-Erweiterung)
+- **Google Drive** (mit WebDAV-Erweiterung)
+
+#### 2. Anwendung starten
+
+1. Öffne `index.html` in deinem Browser
+2. Wähle "WebDAV" als Speichermethode
+3. Gib WebDAV URL, Benutzername und Passwort ein
+4. Optional: Gib einen benutzerdefinierten Dateinamen ein
+5. Klicke "Verbinden"
+6. Fertig! 🎉
 
 
 ## 📁 Datenstruktur
@@ -89,7 +112,7 @@ Die Anwendung speichert deine Daten in einer flexiblen JSON-Struktur:
 ## 🛠️ Technologie-Stack
 
 - **Frontend**: Vanilla JavaScript, HTML5, Tailwind CSS
-- **Datenspeicherung**: GitHub Gists API
+- **Datenspeicherung**: GitHub Gists API oder WebDAV
 - **PWA**: Web App Manifest
 - **Keine Abhängigkeiten**: Nur CDN für Tailwind CSS
 
@@ -116,7 +139,6 @@ Die Anwendung speichert deine Daten in einer flexiblen JSON-Struktur:
 - **Standard-Übungen**: Bearbeite die Liste der vordefinierten Übungen
 - **Profil**: Ändere deinen Namen oder erstelle ein neues Profil
 
-## 🔧 Entwicklung
 ## 🚀 Demo & Testen
 
 Du kannst die Anwendung direkt hier testen:  
@@ -149,10 +171,11 @@ Die Anwendung unterstützt das Importieren von Daten aus der alten Backend-Versi
 
 ## 🛡️ Datenschutz & Sicherheit
 
-- **Keine Server-Logs**: Alle Daten werden direkt in GitHub Gists gespeichert
-- **Private Gists**: Deine Daten sind standardmäßig privat
+- **Keine Server-Logs**: Alle Daten werden direkt in GitHub Gists oder auf deinem WebDAV Server gespeichert
+- **Private Speicherung**: Deine Daten sind standardmäßig privat
 - **Lokale Verarbeitung**: Alle Berechnungen finden im Browser statt
 - **Keine Tracking-Cookies**: Die Anwendung verwendet keine Cookies
+- **Vollständige Kontrolle**: Bei WebDAV hast du die vollständige Kontrolle über deine Daten
 
 ## 🤝 Beitragen
 
@@ -160,8 +183,13 @@ Verbesserungen und Bug-Reports sind willkommen!
 
 ### Bekannte Einschränkungen
 
-- GitHub API Rate Limits (5000 Requests/Stunde für authentifizierte Benutzer)
-- Maximale Gist-Größe: 100MB
+- **GitHub Gists**: 
+  - API Rate Limits (5000 Requests/Stunde für authentifizierte Benutzer)
+  - Maximale Gist-Größe: 100MB
+- **WebDAV**:
+  - Abhängig von der Server-Konfiguration
+  - CORS-Einschränkungen können auftreten
+  - Server muss WebDAV-Protokoll unterstützen
 
 ## 📄 Lizenz
 
