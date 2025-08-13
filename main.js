@@ -247,7 +247,16 @@ function sortExercisesByDefaultOrder(exerciseEntries) {
 
 // Utility Functions
 function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  // Verwende performance.now() für Mikrosekunden-Präzision
+  // und einen Zähler für noch höhere Präzision bei sehr schnellen Aufrufen
+  if (!window.idCounter) window.idCounter = 0;
+  window.idCounter++;
+  
+  const timestamp = performance.now();
+  const counter = window.idCounter;
+  
+  // Kombiniere Timestamp und Zähler für eindeutige, sortierbare IDs
+  return timestamp.toString(36) + counter.toString(36);
 }
 
 function getAllAvailableExercises() {
@@ -922,7 +931,13 @@ function renderExerciseSummary() {
   const sortedExercises = sortExercisesByDefaultOrder(Object.entries(exerciseGroups));
   return sortedExercises.map(([exerciseName, exercises]) => {
     const totalSessions = exercises.length;
-    const lastSession = exercises.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    const lastSession = exercises.sort((a, b) => {
+      // Zuerst nach Datum sortieren (neueste zuerst)
+      const dateComparison = new Date(b.date) - new Date(a.date);
+      if (dateComparison !== 0) return dateComparison;
+      // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+      return b.id.localeCompare(a.id);
+    })[0];
     const firstSession = exercises.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
     const isNoteGroup = exerciseName === '📝 Notizen';
     
@@ -987,7 +1002,13 @@ function renderExerciseSummary() {
         ${isNoteGroup ? `
           <div class="space-y-2">
             ${exercises
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .sort((a, b) => {
+                // Zuerst nach Datum sortieren (neueste zuerst)
+                const dateComparison = new Date(b.date) - new Date(a.date);
+                if (dateComparison !== 0) return dateComparison;
+                // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+                return b.id.localeCompare(a.id);
+              })
               .slice(0, 3)
               .map(note => `
                 <div class="p-3 bg-purple-50 rounded-lg">
@@ -1026,7 +1047,13 @@ function renderExerciseSummary() {
             </div>
             <div class="space-y-2">
               ${exercises
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .sort((a, b) => {
+                  // Zuerst nach Datum sortieren (neueste zuerst)
+                  const dateComparison = new Date(b.date) - new Date(a.date);
+                  if (dateComparison !== 0) return dateComparison;
+                  // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+                  return b.id.localeCompare(a.id);
+                })
                 .slice(0, 3)
                 .map(training => `
                   <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
@@ -1083,7 +1110,13 @@ function renderTrainingMode() {
   // Sortiere nach Standard-Übungen
   const sortedExercises = sortExercisesByDefaultOrder(Object.entries(exerciseGroups));
   return sortedExercises.map(([exerciseName, exercises]) => {
-    const lastSession = exercises.sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    const lastSession = exercises.sort((a, b) => {
+      // Zuerst nach Datum sortieren (neueste zuerst)
+      const dateComparison = new Date(b.date) - new Date(a.date);
+      if (dateComparison !== 0) return dateComparison;
+      // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+      return b.id.localeCompare(a.id);
+    })[0];
     const isNoteGroup = exerciseName === '📝 Notizen';
     
     // Finde 1RM falls vorhanden (nur für Trainings)
@@ -1117,7 +1150,13 @@ function renderTrainingMode() {
         
         <div class="space-y-2">
           ${exercises
-            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .sort((a, b) => {
+              // Zuerst nach Datum sortieren (neueste zuerst)
+              const dateComparison = new Date(b.date) - new Date(a.date);
+              if (dateComparison !== 0) return dateComparison;
+              // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+              return b.id.localeCompare(a.id);
+            })
             .slice(0, 2)
             .map(training => `
               <div class="p-2 ${training.isNote ? 'bg-purple-50' : 'bg-gray-50'} rounded text-sm group relative">
@@ -1173,7 +1212,13 @@ function renderTrainingMode() {
         <div id="training-history-${exerciseName.replace(/\s+/g, '-')}" class="hidden mt-3 pt-3 border-t border-gray-200">
           <div class="space-y-2">
             ${exercises
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
+              .sort((a, b) => {
+                // Zuerst nach Datum sortieren (neueste zuerst)
+                const dateComparison = new Date(b.date) - new Date(a.date);
+                if (dateComparison !== 0) return dateComparison;
+                // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+                return b.id.localeCompare(a.id);
+              })
               .slice(2)
               .map(training => `
                 <div class="p-2 bg-gray-50 rounded text-sm group relative">
@@ -1231,8 +1276,9 @@ function renderExerciseList() {
       // Zuerst nach Datum sortieren (neueste zuerst)
       const dateComparison = new Date(b.date) - new Date(a.date);
       if (dateComparison !== 0) return dateComparison;
-      // Bei gleichem Datum nach ID sortieren (höhere ID = neuer)
-      return parseInt(b.id) - parseInt(a.id);
+      // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+      // Da IDs jetzt Timestamps enthalten, können wir sie direkt vergleichen
+      return b.id.localeCompare(a.id);
     })
     .map(exercise => `
       <div class="p-6 hover:bg-gray-50 transition-colors">
@@ -1620,7 +1666,13 @@ function showExerciseDetails(exerciseName) {
   // Filtere alle Trainings für diese Übung
   const exerciseTrainings = appData.exercises
     .filter(ex => ex.exercise === exerciseName)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
+    .sort((a, b) => {
+      // Zuerst nach Datum sortieren (neueste zuerst)
+      const dateComparison = new Date(b.date) - new Date(a.date);
+      if (dateComparison !== 0) return dateComparison;
+      // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+      return b.id.localeCompare(a.id);
+    });
 
   // Erstelle Modal HTML
   const modalHTML = `
@@ -2451,7 +2503,13 @@ function getLastTrainingDate() {
   const trainingExercises = appData.exercises.filter(ex => !ex.isNote);
   if (trainingExercises.length === 0) return 'Keine';
   const lastExercise = trainingExercises
-    .sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+    .sort((a, b) => {
+      // Zuerst nach Datum sortieren (neueste zuerst)
+      const dateComparison = new Date(b.date) - new Date(a.date);
+      if (dateComparison !== 0) return dateComparison;
+      // Bei gleichem Datum nach ID sortieren (neuere IDs sind größer)
+      return b.id.localeCompare(a.id);
+    })[0];
   return formatDate(lastExercise.date);
 }
 
