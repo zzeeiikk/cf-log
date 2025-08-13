@@ -247,12 +247,12 @@ function sortExercisesByDefaultOrder(exerciseEntries) {
 
 // Utility Functions
 function generateId() {
-  // Verwende performance.now() für Mikrosekunden-Präzision
+  // Verwende Date.now() für Millisekunden-Präzision
   // und einen Zähler für noch höhere Präzision bei sehr schnellen Aufrufen
   if (!window.idCounter) window.idCounter = 0;
   window.idCounter++;
   
-  const timestamp = performance.now();
+  const timestamp = Date.now();
   const counter = window.idCounter;
   
   // Kombiniere Timestamp und Zähler für eindeutige, sortierbare IDs
@@ -1332,7 +1332,7 @@ function renderAddExerciseModal() {
   return `
     <div id="add-exercise-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
       <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[95vh] overflow-y-auto">
           <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-semibold text-gray-900">Eintrag hinzufügen</h3>
@@ -1402,7 +1402,7 @@ function renderAddExerciseModal() {
             </div>
 
             
-            <div class="flex space-x-3 pt-4">
+            <div class="flex space-x-3 pt-4 pb-6 sm:pb-4">
               <button type="button" onclick="hideAddExerciseModal()" 
                       class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
                 Abbrechen
@@ -1423,7 +1423,7 @@ function renderSettingsModal() {
   return `
     <div id="settings-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
       <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] flex flex-col">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[95vh] flex flex-col">
           <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-semibold text-gray-900">Einstellungen</h3>
@@ -1562,7 +1562,7 @@ function renderSettingsModal() {
           </div>
           
           <div class="px-6 py-4 border-t border-gray-200 flex-shrink-0">
-            <div class="flex space-x-3">
+            <div class="flex space-x-3 pb-6 sm:pb-4">
               <button onclick="hideSettingsModal()" 
                       class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
                 Schließen
@@ -1612,7 +1612,7 @@ function renderImportModal() {
               </ul>
             </div>
             
-            <div class="flex space-x-3 pt-4">
+            <div class="flex space-x-3 pt-4 pb-6 sm:pb-4">
               <button onclick="hideImportModal()" 
                       class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
                 Abbrechen
@@ -1775,7 +1775,7 @@ function showEditExerciseModal(exercise) {
   const modalHTML = `
     <div id="edit-exercise-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50">
       <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-screen overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[95vh] overflow-y-auto">
           <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex justify-between items-center">
               <h3 class="text-lg font-semibold text-gray-900">Eintrag bearbeiten</h3>
@@ -1854,7 +1854,7 @@ function showEditExerciseModal(exercise) {
 
                         </div>
             
-            <div class="flex space-x-3 pt-4">
+            <div class="flex space-x-3 pt-4 pb-6 sm:pb-4">
               <button type="button" onclick="hideEditExerciseModal()" 
                       class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors">
                 Abbrechen
@@ -1874,7 +1874,9 @@ function showEditExerciseModal(exercise) {
   document.body.insertAdjacentHTML('beforeend', modalHTML);
   
   // Event Listener für das Formular
-  document.getElementById('edit-exercise-form').addEventListener('submit', async (e) => {
+  const form = document.getElementById('edit-exercise-form');
+  if (form) {
+    form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
     const id = document.getElementById('edit-exercise-id').value;
@@ -1892,11 +1894,18 @@ function showEditExerciseModal(exercise) {
     const is1RM = is1RMElement ? is1RMElement.checked : false;
     
     const sets = [];
-    const setRows = document.querySelectorAll('#edit-sets-container > div');
+    const setRows = document.querySelectorAll('#edit-sets-container .edit-set-row');
     for (const row of setRows) {
       const inputs = row.querySelectorAll('input');
-    const reps = inputs[0].value;
-    const weight = inputs[1].value;
+      
+      // Sicherheitscheck: Stelle sicher, dass alle Inputs vorhanden sind
+      if (inputs.length < 3) {
+        console.warn('Ungültige Edit-Set-Struktur gefunden:', row);
+        continue;
+      }
+      
+      const reps = inputs[0].value;
+      const weight = inputs[1].value;
       const setNotes = inputs[2].value.trim();
       
       if (reps && weight) {
@@ -1942,6 +1951,7 @@ function showEditExerciseModal(exercise) {
       showNotification(isNoteOnly ? 'Notiz erfolgreich aktualisiert!' : 'Training erfolgreich aktualisiert!', 'success');
     }
   });
+  }
 }
 
 function hideEditExerciseModal() {
@@ -1953,6 +1963,11 @@ function hideEditExerciseModal() {
 
 function addEditSet() {
   const container = document.getElementById('edit-sets-container');
+  if (!container) {
+    console.error('Edit-Sets-Container nicht gefunden');
+    return;
+  }
+  
   const existingSets = container.querySelectorAll('.edit-set-row');
   const setNumber = existingSets.length + 1;
   
@@ -1964,9 +1979,11 @@ function addEditSet() {
   if (existingSets.length > 0) {
     const lastSet = existingSets[existingSets.length - 1];
     const inputs = lastSet.querySelectorAll('input');
-    lastReps = inputs[0].value;
-    lastWeight = inputs[1].value;
-    lastNotes = inputs[2].value;
+    if (inputs.length >= 3) {
+      lastReps = inputs[0].value;
+      lastWeight = inputs[1].value;
+      lastNotes = inputs[2].value;
+    }
   }
   
   // Divider hinzufügen (außer beim ersten Set)
@@ -1994,6 +2011,11 @@ function addEditSet() {
 function removeEditSet(button) {
   const setRow = button.parentElement;
   const container = document.getElementById('edit-sets-container');
+  
+  if (!setRow || !container) {
+    console.error('Edit-Set-Row oder Container nicht gefunden');
+    return;
+  }
   
   // Entferne das Set
   setRow.remove();
@@ -2257,7 +2279,9 @@ function hideTokenModal() {
 
 function setupModalEventListeners() {
   // Exercise Form
-  document.getElementById('exercise-form').addEventListener('submit', async (e) => {
+  const exerciseForm = document.getElementById('exercise-form');
+  if (exerciseForm) {
+    exerciseForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const date = document.getElementById('exercise-date').value;
@@ -2267,9 +2291,16 @@ function setupModalEventListeners() {
     const notes = document.getElementById('exercise-notes').value.trim();
     
     const sets = [];
-    const setRows = document.querySelectorAll('#sets-container > div');
+    const setRows = document.querySelectorAll('#sets-container .set-row');
     for (const row of setRows) {
       const inputs = row.querySelectorAll('input');
+      
+      // Sicherheitscheck: Stelle sicher, dass alle Inputs vorhanden sind
+      if (inputs.length < 3) {
+        console.warn('Ungültige Set-Struktur gefunden:', row);
+        continue;
+      }
+      
       const reps = inputs[0].value;
       const weight = inputs[1].value;
       const setNotes = inputs[2].value.trim();
@@ -2321,11 +2352,17 @@ function setupModalEventListeners() {
     renderDashboard();
     showNotification(isNoteOnly ? 'Notiz erfolgreich gespeichert!' : 'Training erfolgreich gespeichert!', 'success');
   });
+  }
 }
 
 // Utility Functions
 function addSet() {
   const container = document.getElementById('sets-container');
+  if (!container) {
+    console.error('Sets-Container nicht gefunden');
+    return;
+  }
+  
   const existingSets = container.querySelectorAll('.set-row');
   const setNumber = existingSets.length + 1;
   
@@ -2337,9 +2374,11 @@ function addSet() {
   if (existingSets.length > 0) {
     const lastSet = existingSets[existingSets.length - 1];
     const inputs = lastSet.querySelectorAll('input');
-    lastReps = inputs[0].value;
-    lastWeight = inputs[1].value;
-    lastNotes = inputs[2].value;
+    if (inputs.length >= 3) {
+      lastReps = inputs[0].value;
+      lastWeight = inputs[1].value;
+      lastNotes = inputs[2].value;
+    }
   }
   
   // Divider hinzufügen (außer beim ersten Set)
@@ -2366,6 +2405,8 @@ function addSet() {
 
 function updateSetNumbers() {
   const container = document.getElementById('sets-container');
+  if (!container) return;
+  
   const setRows = container.querySelectorAll('.set-row');
   setRows.forEach((row, index) => {
     const numberDiv = row.querySelector('div');
@@ -2378,6 +2419,11 @@ function updateSetNumbers() {
 function removeSet(button) {
   const setRow = button.parentElement;
   const container = document.getElementById('sets-container');
+  
+  if (!setRow || !container) {
+    console.error('Set-Row oder Container nicht gefunden');
+    return;
+  }
   
   // Entferne das Set
   setRow.remove();
