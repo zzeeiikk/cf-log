@@ -4,6 +4,301 @@
 const FILE_NAME = 'cf-log.json';
 const GITHUB_API = 'https://api.github.com';
 
+// PWA Installation Support
+let deferredPrompt;
+let installButton = null;
+
+// PWA Install Event Listener
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallPrompt();
+});
+
+// Show install prompt after successful login
+function showInstallPromptAfterLogin() {
+  // Wait a bit for the dashboard to load
+  setTimeout(() => {
+    if (isMobileDevice()) {
+      // Check if we should show the prompt
+      const lastShown = localStorage.getItem('cf_log_install_prompt_shown');
+      const now = Date.now();
+      if (!lastShown || (now - parseInt(lastShown)) > 24 * 60 * 60 * 1000) {
+        // Show unified banner (works for all browsers)
+        showInstallPrompt();
+      }
+    }
+  }, 2000); // Show after 2 seconds
+}
+
+// PWA Install Success
+window.addEventListener('appinstalled', () => {
+  hideInstallPrompt();
+  showNotification('cf-log wurde erfolgreich installiert! 🎉', 'success');
+});
+
+// Show install prompt
+function showInstallPrompt() {
+  // Only show on mobile devices
+  if (!isMobileDevice()) return;
+  
+  // Don't show if app is already installed as PWA
+  if (window.matchMedia('(display-mode: standalone)').matches || 
+      window.navigator.standalone === true) {
+    return;
+  }
+  
+  // Check if user has disabled PWA hints
+  if (localStorage.getItem('cf_log_pwa_hint_enabled') === 'false') {
+    return;
+  }
+  
+  // Check if already shown recently
+  const lastShown = localStorage.getItem('cf_log_install_prompt_shown');
+  const now = Date.now();
+  if (lastShown && (now - parseInt(lastShown)) < 24 * 60 * 60 * 1000) return; // 24 hours
+  
+  // Create install banner
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.className = 'fixed top-0 left-0 right-0 bg-apple-blue text-white p-4 z-50 shadow-lg transform transition-transform duration-300';
+  banner.style.transform = 'translateY(-100%)';
+  
+  banner.innerHTML = `
+    <div class="flex items-center justify-between max-w-md mx-auto">
+      <div class="flex items-center space-x-3">
+        <img src="cf-log.jpg" alt="cf-log" class="w-8 h-8 rounded">
+        <div>
+          <div class="font-semibold text-sm">📱 cf-log als App installieren</div>
+          <div class="text-xs opacity-90">Für bessere mobile Nutzung</div>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="pwa-install-btn" class="bg-white text-apple-blue px-3 py-1 rounded-full text-sm font-medium">
+          ${deferredPrompt ? 'Installieren' : 'Anleitung'}
+        </button>
+        <button id="pwa-dismiss-btn" class="text-white opacity-70 hover:opacity-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(banner);
+  
+  // Show banner with animation
+  setTimeout(() => {
+    banner.style.transform = 'translateY(0)';
+  }, 1000);
+  
+  // Install button click
+  document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        localStorage.setItem('cf_log_install_prompt_shown', now.toString());
+      }
+      deferredPrompt = null;
+    } else {
+      // Show manual installation guide
+      hideInstallPrompt();
+      showPWAInstallGuide();
+    }
+  });
+  
+  // Dismiss button click
+  document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    hideInstallPrompt();
+    localStorage.setItem('cf_log_install_prompt_shown', now.toString());
+  });
+}
+
+// Force show install prompt (for manual trigger)
+function forceShowInstallPrompt() {
+  // Reset the "shown recently" flag
+  localStorage.removeItem('cf_log_install_prompt_shown');
+  // Temporarily enable PWA hints for this manual trigger
+  const originalSetting = localStorage.getItem('cf_log_pwa_hint_enabled');
+  localStorage.setItem('cf_log_pwa_hint_enabled', 'true');
+  showInstallPrompt();
+  // Restore original setting after showing
+  if (originalSetting === 'false') {
+    setTimeout(() => {
+      localStorage.setItem('cf_log_pwa_hint_enabled', 'false');
+    }, 100);
+  }
+}
+
+
+
+// Hide install prompt
+function hideInstallPrompt() {
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) {
+    banner.style.transform = 'translateY(-100%)';
+    setTimeout(() => {
+      banner.remove();
+    }, 300);
+  }
+}
+
+// Check if device is mobile
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Show PWA installation guide
+function showPWAInstallGuide() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+  
+  let guideHTML = '';
+  
+  if (isIOS) {
+    guideHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">📱 iOS Installation</h3>
+            <button onclick="hidePWAInstallGuide()" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-blue-900 mb-2">Schritt-für-Schritt Anleitung:</h4>
+            <ol class="text-sm text-blue-800 space-y-2">
+              <li>1. Tippe auf das <strong>Teilen-Symbol</strong> (□↑) in Safari</li>
+              <li>2. Scrolle nach unten und wähle <strong>"Zum Home-Bildschirm"</strong></li>
+              <li>3. Tippe auf <strong>"Hinzufügen"</strong></li>
+              <li>4. cf-log erscheint jetzt auf deinem Home-Bildschirm!</li>
+            </ol>
+          </div>
+          <div class="bg-yellow-50 p-4 rounded-lg">
+            <div class="text-yellow-800 text-sm">
+              💡 <strong>Tipp:</strong> Die App funktioniert dann wie eine native App und du hast schnellen Zugriff auf dein Training!
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (isAndroid) {
+    guideHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">📱 Android Installation</h3>
+            <button onclick="hidePWAInstallGuide()" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="bg-green-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-green-900 mb-2">Schritt-für-Schritt Anleitung:</h4>
+            <ol class="text-sm text-green-800 space-y-2">
+              <li>1. Tippe auf das <strong>Menü-Symbol</strong> (⋮) in Chrome</li>
+              <li>2. Wähle <strong>"Zum Startbildschirm hinzufügen"</strong></li>
+              <li>3. Bestätige mit <strong>"Hinzufügen"</strong></li>
+              <li>4. cf-log erscheint jetzt auf deinem Startbildschirm!</li>
+            </ol>
+          </div>
+          <div class="bg-yellow-50 p-4 rounded-lg">
+            <div class="text-yellow-800 text-sm">
+              💡 <strong>Tipp:</strong> Die App funktioniert dann wie eine native App und du hast schnellen Zugriff auf dein Training!
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    guideHTML = `
+      <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">📱 Mobile Installation</h3>
+            <button onclick="hidePWAInstallGuide()" class="text-gray-400 hover:text-gray-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="p-6 space-y-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <h4 class="font-semibold text-gray-900 mb-2">Allgemeine Anleitung:</h4>
+            <div class="text-sm text-gray-700 space-y-2">
+              <p>1. Öffne cf-log in deinem mobilen Browser</p>
+              <p>2. Suche nach der Option <strong>"Zum Startbildschirm hinzufügen"</strong> oder <strong>"Installieren"</strong></p>
+              <p>3. Folge den Anweisungen deines Browsers</p>
+              <p>4. cf-log erscheint dann auf deinem Startbildschirm!</p>
+            </div>
+          </div>
+          <div class="bg-blue-50 p-4 rounded-lg">
+            <div class="text-blue-800 text-sm">
+              💡 <strong>Hinweis:</strong> Die genauen Schritte können je nach Browser und Gerät variieren.
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Create modal overlay
+  const modalHTML = `
+    <div id="pwa-install-guide-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50 flex items-center justify-center p-4">
+      ${guideHTML}
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Close modal when clicking outside
+  document.getElementById('pwa-install-guide-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'pwa-install-guide-modal') {
+      hidePWAInstallGuide();
+    }
+  });
+}
+
+// Hide PWA installation guide
+function hidePWAInstallGuide() {
+  const modal = document.getElementById('pwa-install-guide-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+// Switch settings tab
+function switchSettingsTab(tabName) {
+  // Hide all tab contents
+  document.querySelectorAll('.settings-tab-content').forEach(content => {
+    content.classList.add('hidden');
+  });
+  
+  // Remove active class from all tabs
+  document.querySelectorAll('.settings-tab').forEach(tab => {
+    tab.classList.remove('bg-white', 'text-gray-900', 'shadow-sm');
+    tab.classList.add('text-gray-600', 'hover:text-gray-900');
+  });
+  
+  // Show selected tab content
+  document.getElementById(`tab-content-${tabName}`).classList.remove('hidden');
+  
+  // Add active class to selected tab
+  const activeTab = document.getElementById(`tab-${tabName}`);
+  activeTab.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
+  activeTab.classList.remove('text-gray-600', 'hover:text-gray-900');
+}
+
 // Storage Provider Interface
 class StorageProvider {
   async save(data) { throw new Error('save() must be implemented'); }
@@ -1436,128 +1731,203 @@ function renderSettingsModal() {
             </div>
           </div>
           
-          <div class="p-6 space-y-6 overflow-y-auto flex-1">
-            <!-- Standard-Übungen -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Standard-Übungen</label>
-              <textarea id="default-exercises" rows="4" 
-                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Eine Übung pro Zeile">${appData.settings.defaultExercises.join('\n')}</textarea>
+          <!-- Tab Navigation -->
+          <div class="px-6 py-4 border-b border-gray-200 flex-shrink-0">
+            <div class="flex space-x-1 bg-gray-100 rounded-lg p-1">
+              <button onclick="switchSettingsTab('general')" 
+                      id="tab-general"
+                      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors settings-tab bg-white text-gray-900 shadow-sm">
+                Allgemein
+              </button>
+              <button onclick="switchSettingsTab('data')" 
+                      id="tab-data"
+                      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors settings-tab text-gray-600 hover:text-gray-900">
+                Daten
+              </button>
+              <button onclick="switchSettingsTab('mobile')" 
+                      id="tab-mobile"
+                      class="flex-1 px-3 py-2 text-sm font-medium rounded-md transition-colors settings-tab text-gray-600 hover:text-gray-900">
+                Mobile
+              </button>
             </div>
-            
-            <!-- Daten-Management -->
-            <div class="border-t border-gray-200 pt-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Daten-Management</h4>
-              <div class="space-y-3">
-                <button onclick="exportData()" 
-                        class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                  <span>📥</span>
-                  <span>Daten exportieren</span>
-                </button>
-                <button onclick="hideSettingsModal(); showImportModal();" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                  <span>📤</span>
-                  <span>Daten importieren</span>
-                </button>
+          </div>
+          
+          <div class="p-6 overflow-y-auto flex-1">
+                        <!-- General Tab -->
+            <div id="tab-content-general" class="settings-tab-content">
+              <!-- Standard-Übungen -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Standard-Übungen</label>
+                <textarea id="default-exercises" rows="4" 
+                          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Eine Übung pro Zeile">${appData.settings.defaultExercises.join('\n')}</textarea>
+              </div>
+              
+              <!-- Statistiken -->
+              <div class="mt-6">
+                <h4 class="text-sm font-medium text-gray-900 mb-3">Statistiken</h4>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                  <div class="bg-gray-50 p-3 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900">${getTotalTrainings()}</div>
+                    <div class="text-gray-600">Trainings</div>
+                  </div>
+                  <div class="bg-gray-50 p-3 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900">${getUniqueExerciseCount()}</div>
+                    <div class="text-gray-600">Übungen</div>
+                  </div>
+                  <div class="bg-gray-50 p-3 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900">${getTotalSets()}</div>
+                    <div class="text-gray-600">Sets</div>
+                  </div>
+                  <div class="bg-gray-50 p-3 rounded-lg">
+                    <div class="text-lg font-bold text-gray-900">${getLastTrainingDate()}</div>
+                    <div class="text-gray-600">Letztes</div>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <!-- Storage-Informationen -->
-            <div class="border-t border-gray-200 pt-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Speicher-Informationen</h4>
-              <div class="space-y-3 text-sm">
-                ${(() => {
-                  const storageType = localStorage.getItem('cf_log_storage_type');
-                  if (storageType === 'github') {
-                    return `
-                <div class="bg-blue-50 p-3 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                          <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                          </svg>
-                          <span class="font-medium text-blue-900">GitHub Gists</span>
-                        </div>
-                        <div class="text-blue-700 font-mono break-all mb-2">Gist-ID: ${localStorage.getItem('cf_log_gist_id') || 'Nicht verfügbar'}</div>
-                        <div class="text-blue-700 font-mono break-all mb-2">Token: ${localStorage.getItem('cf_log_token') ? 
-                          localStorage.getItem('cf_log_token').substring(0, 8) + '••••••••••••••••' : 
-                          'Nicht verfügbar'}</div>
-                        <div class="flex space-x-2">
-                  <button onclick="copyToClipboard('${localStorage.getItem('cf_log_gist_id') || ''}')" 
-                                  class="text-blue-600 hover:text-blue-800 text-xs">
-                            📋 Gist-ID kopieren
-                          </button>
-                          <button onclick="copyToClipboard('${localStorage.getItem('cf_log_token') || ''}')" 
-                                  class="text-blue-600 hover:text-blue-800 text-xs">
-                            📋 Token kopieren
-                          </button>
-                          <button onclick="toggleTokenVisibility()" 
-                                  class="text-blue-600 hover:text-blue-800 text-xs">
-                            👁️ Token anzeigen
+                        <!-- Data Tab -->
+            <div id="tab-content-data" class="settings-tab-content hidden">
+              <!-- Daten-Management -->
+              <div>
+                <h4 class="text-sm font-medium text-gray-900 mb-3">Daten-Management</h4>
+                <div class="space-y-3">
+                  <button onclick="exportData()" 
+                          class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                    <span>📥</span>
+                    <span>Daten exportieren</span>
+                  </button>
+                  <button onclick="hideSettingsModal(); showImportModal();" 
+                          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                    <span>📤</span>
+                    <span>Daten importieren</span>
                   </button>
                 </div>
-                      </div>
-                    `;
-                  } else if (storageType === 'webdav') {
-                    return `
-                <div class="bg-green-50 p-3 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                          <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                          </svg>
-                          <span class="font-medium text-green-900">WebDAV</span>
-                  </div>
-                        <div class="text-green-700 font-mono break-all mb-2">URL: ${localStorage.getItem('cf_log_webdav_url') || 'Nicht verfügbar'}</div>
-                        <div class="text-green-700 font-mono break-all mb-2">Benutzer: ${localStorage.getItem('cf_log_webdav_username') || 'Nicht verfügbar'}</div>
-                        <div class="text-green-700 font-mono break-all mb-2">Datei: ${localStorage.getItem('cf_log_webdav_filename') || FILE_NAME}</div>
-                        <div class="flex space-x-2">
-                          <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_url') || ''}')" 
-                            class="text-green-600 hover:text-green-800 text-xs">
-                            📋 URL kopieren
+              </div>
+              
+              <!-- Storage-Informationen -->
+              <div class="mt-6">
+                <h4 class="text-sm font-medium text-gray-900 mb-3">Speicher-Informationen</h4>
+                <div class="space-y-3 text-sm">
+                  ${(() => {
+                    const storageType = localStorage.getItem('cf_log_storage_type');
+                    if (storageType === 'github') {
+                      return `
+                  <div class="bg-blue-50 p-3 rounded-lg">
+                          <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            <span class="font-medium text-blue-900">GitHub Gists</span>
+                          </div>
+                          <div class="text-blue-700 font-mono break-all mb-2">Gist-ID: ${localStorage.getItem('cf_log_gist_id') || 'Nicht verfügbar'}</div>
+                          <div class="text-blue-700 font-mono break-all mb-2">Token: ${localStorage.getItem('cf_log_token') ? 
+                            localStorage.getItem('cf_log_token').substring(0, 8) + '••••••••••••••••' : 
+                            'Nicht verfügbar'}</div>
+                          <div class="flex space-x-2">
+                    <button onclick="copyToClipboard('${localStorage.getItem('cf_log_gist_id') || ''}')" 
+                                    class="text-blue-600 hover:text-blue-800 text-xs">
+                              📋 Gist-ID kopieren
+                            </button>
+                            <button onclick="copyToClipboard('${localStorage.getItem('cf_log_token') || ''}')" 
+                                    class="text-blue-600 hover:text-blue-800 text-xs">
+                              📋 Token kopieren
+                            </button>
+                            <button onclick="toggleTokenVisibility()" 
+                                    class="text-blue-600 hover:text-blue-800 text-xs">
+                              👁️ Token anzeigen
                     </button>
-                          <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_username') || ''}')" 
-                            class="text-green-600 hover:text-green-800 text-xs">
-                            📋 Benutzer kopieren
-                    </button>
                   </div>
-                </div>
-                    `;
-                  } else {
-                    return `
-                      <div class="bg-gray-50 p-3 rounded-lg">
-                        <div class="text-gray-700">Keine Speichermethode konfiguriert</div>
-                      </div>
-                    `;
-                  }
-                })()}
-                <div class="bg-yellow-50 p-3 rounded-lg">
-                  <div class="text-yellow-800 text-xs">
-                    💡 <strong>Tipp:</strong> Speichere diese Daten sicher ab! Ohne sie kannst du dich nicht wieder einloggen.
+                        </div>
+                      `;
+                    } else if (storageType === 'webdav') {
+                      return `
+                  <div class="bg-green-50 p-3 rounded-lg">
+                          <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <span class="font-medium text-green-900">WebDAV</span>
+                    </div>
+                          <div class="text-green-700 font-mono break-all mb-2">URL: ${localStorage.getItem('cf_log_webdav_url') || 'Nicht verfügbar'}</div>
+                          <div class="text-green-700 font-mono break-all mb-2">Benutzer: ${localStorage.getItem('cf_log_webdav_username') || 'Nicht verfügbar'}</div>
+                          <div class="text-green-700 font-mono break-all mb-2">Datei: ${localStorage.getItem('cf_log_webdav_filename') || FILE_NAME}</div>
+                          <div class="flex space-x-2">
+                            <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_url') || ''}')" 
+                              class="text-green-600 hover:text-green-800 text-xs">
+                              📋 URL kopieren
+                      </button>
+                            <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_username') || ''}')" 
+                              class="text-green-600 hover:text-green-800 text-xs">
+                              📋 Benutzer kopieren
+                      </button>
+                    </div>
+                  </div>
+                      `;
+                    } else {
+                      return `
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                          <div class="text-gray-700">Keine Speichermethode konfiguriert</div>
+                        </div>
+                      `;
+                    }
+                  })()}
+                  <div class="bg-yellow-50 p-3 rounded-lg">
+                    <div class="text-yellow-800 text-xs">
+                      💡 <strong>Tipp:</strong> Speichere diese Daten sicher ab! Ohne sie kannst du dich nicht wieder einloggen.
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             
-            <!-- Statistiken -->
-            <div class="border-t border-gray-200 pt-4">
-              <h4 class="text-sm font-medium text-gray-900 mb-3">Statistiken</h4>
-              <div class="grid grid-cols-2 gap-3 text-sm">
-                <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-lg font-bold text-gray-900">${getTotalTrainings()}</div>
-                  <div class="text-gray-600">Trainings</div>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-lg font-bold text-gray-900">${getUniqueExerciseCount()}</div>
-                  <div class="text-gray-600">Übungen</div>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-lg font-bold text-gray-900">${getTotalSets()}</div>
-                  <div class="text-gray-600">Sets</div>
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg">
-                  <div class="text-lg font-bold text-gray-900">${getLastTrainingDate()}</div>
-                  <div class="text-gray-600">Letztes</div>
+            <!-- Mobile Tab -->
+            <div id="tab-content-mobile" class="settings-tab-content hidden">
+              ${isMobileDevice() ? `
+              <!-- PWA Installation -->
+              <div>
+                <h4 class="text-sm font-medium text-gray-900 mb-3">Mobile App Installation</h4>
+                <div class="space-y-3">
+                  <button onclick="showPWAInstallGuide()" 
+                          class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                    <span>📱</span>
+                    <span>Installationsanleitung anzeigen</span>
+                  </button>
+                  <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                      <span>🔔</span>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">Installationshinweis</div>
+                        <div class="text-xs text-gray-600">Automatisch nach Login anzeigen</div>
+                      </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="pwa-hint-toggle" 
+                             class="sr-only peer" 
+                             ${localStorage.getItem('cf_log_pwa_hint_enabled') !== 'false' ? 'checked' : ''}>
+                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                  </div>
+                  <button onclick="forceShowInstallPrompt()" 
+                          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
+                    <span>🔔</span>
+                    <span>Installationshinweis jetzt anzeigen</span>
+                  </button>
+                  <div class="bg-blue-50 p-3 rounded-lg">
+                    <div class="text-blue-800 text-xs">
+                      💡 <strong>Mobile Gerät erkannt:</strong> Du kannst cf-log als App installieren für eine bessere Nutzung!
+                    </div>
+                  </div>
                 </div>
               </div>
+              ` : `
+              <div class="text-center py-8">
+                <div class="text-gray-500 text-sm">
+                  📱 Mobile Einstellungen sind nur auf mobilen Geräten verfügbar
+                </div>
+              </div>
+              `}
             </div>
           </div>
           
@@ -1648,6 +2018,8 @@ function hideAddExerciseModal() {
 
 function showSettingsModal() {
   document.getElementById('settings-modal').classList.remove('hidden');
+  // Set "Allgemein" tab as active by default
+  switchSettingsTab('general');
 }
 
 function hideSettingsModal() {
@@ -2464,6 +2836,12 @@ function saveSettings() {
     .map(ex => ex.trim())
     .filter(ex => ex.length > 0);
   
+  // Save PWA hint toggle setting
+  const pwaHintToggle = document.getElementById('pwa-hint-toggle');
+  if (pwaHintToggle) {
+    localStorage.setItem('cf_log_pwa_hint_enabled', pwaHintToggle.checked.toString());
+  }
+  
   appData.settings.defaultExercises = defaultExercises;
   saveData();
   hideSettingsModal();
@@ -2764,6 +3142,7 @@ async function main() {
   // Demo-Modus prüfen
   if (demoMode === 'true') {
     renderDashboard();
+    showInstallPromptAfterLogin();
     return;
   }
   
@@ -2800,6 +3179,8 @@ async function main() {
     const data = await currentStorageProvider.load();
     appData = { ...appData, ...data };
     renderDashboard();
+    // Show PWA install prompt after successful login
+    showInstallPromptAfterLogin();
   } catch (err) {
     showNotification('Fehler beim Laden: ' + err.message, 'error');
     logout();
