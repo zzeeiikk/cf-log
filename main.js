@@ -277,6 +277,43 @@ function hidePWAInstallGuide() {
   }
 }
 
+// Show mobile dropdown for exercise selection
+function showMobileDropdown(exercises, input, dropdown) {
+  if (exercises.length === 0) {
+    dropdown.classList.add('hidden');
+    return;
+  }
+  
+  dropdown.innerHTML = exercises.map(ex => `
+    <div class="px-3 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0" 
+         onclick="selectExercise('${ex}', '${input.id}')">
+      ${ex}
+    </div>
+  `).join('');
+  
+  dropdown.classList.remove('hidden');
+}
+
+// Select exercise from mobile dropdown
+function selectExercise(exerciseName, inputId) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById('mobile-exercise-dropdown');
+  const editDropdown = document.getElementById('mobile-edit-exercise-dropdown');
+  
+  if (input) {
+    input.value = exerciseName;
+    input.focus();
+  }
+  
+  // Hide both dropdowns
+  if (dropdown) {
+    dropdown.classList.add('hidden');
+  }
+  if (editDropdown) {
+    editDropdown.classList.add('hidden');
+  }
+}
+
 // Switch settings tab
 function switchSettingsTab(tabName) {
   // Hide all tab contents
@@ -1653,12 +1690,17 @@ function renderAddExerciseModal() {
             
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Übung (optional bei Notizen)</label>
-              <input type="text" id="exercise-name" list="exercise-datalist" 
-                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     placeholder="Übung auswählen">
-              <datalist id="exercise-datalist">
-                ${getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('')}
-              </datalist>
+              <div class="relative">
+                <input type="text" id="exercise-name" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Übung auswählen" autocomplete="off">
+                <datalist id="exercise-datalist" class="hidden">
+                  ${getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('')}
+                </datalist>
+                <!-- Mobile Dropdown -->
+                <div id="mobile-exercise-dropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
+                </div>
+              </div>
               <p class="text-xs text-gray-500 mt-1">💡 Leer lassen für eine reine Notiz ohne Übung</p>
             </div>
             
@@ -2013,6 +2055,44 @@ function showAddExerciseModal() {
     if (datalist) {
       datalist.innerHTML = getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('');
     }
+    
+    // Mobile-friendly autocomplete fix
+    const exerciseInput = document.getElementById('exercise-name');
+    const mobileDropdown = document.getElementById('mobile-exercise-dropdown');
+    
+    if (exerciseInput && mobileDropdown) {
+      const exercises = getAllAvailableExercises();
+      
+      if (isMobileDevice()) {
+        // Mobile: Use custom dropdown, disable datalist
+        exerciseInput.removeAttribute('list');
+        
+        // Show mobile dropdown on focus
+        exerciseInput.addEventListener('focus', function() {
+          showMobileDropdown(exercises, exerciseInput, mobileDropdown);
+        });
+        
+        // Filter dropdown on input
+        exerciseInput.addEventListener('input', function() {
+          const value = this.value.toLowerCase();
+          const filtered = exercises.filter(ex => 
+            ex.toLowerCase().includes(value)
+          );
+          showMobileDropdown(filtered, exerciseInput, mobileDropdown);
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!exerciseInput.contains(e.target) && !mobileDropdown.contains(e.target)) {
+            mobileDropdown.classList.add('hidden');
+          }
+        });
+      } else {
+        // Desktop: Use native datalist
+        exerciseInput.setAttribute('list', 'exercise-datalist');
+        mobileDropdown.classList.add('hidden');
+      }
+    }
   }, 100);
 }
 
@@ -2177,12 +2257,17 @@ function showEditExerciseModal(exercise) {
             ${exercise.isNote ? '' : `
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Übung (optional bei Notizen)</label>
-              <input type="text" id="edit-exercise-name" list="edit-exercise-datalist" 
-                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     value="${exercise.isNote ? '' : exercise.exercise}">
-              <datalist id="edit-exercise-datalist">
-                ${getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('')}
-              </datalist>
+              <div class="relative">
+                <input type="text" id="edit-exercise-name" 
+                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       value="${exercise.isNote ? '' : exercise.exercise}" autocomplete="off">
+                <datalist id="edit-exercise-datalist" class="hidden">
+                  ${getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('')}
+                </datalist>
+                <!-- Mobile Dropdown -->
+                <div id="mobile-edit-exercise-dropdown" class="hidden absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto mt-1">
+                </div>
+              </div>
               <p class="text-xs text-gray-500 mt-1">💡 Leer lassen für eine reine Notiz ohne Übung</p>
             </div>
             
@@ -2249,6 +2334,46 @@ function showEditExerciseModal(exercise) {
 
   // Modal zum DOM hinzufügen
   document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Mobile-friendly autocomplete fix for edit modal
+  setTimeout(() => {
+    const editExerciseInput = document.getElementById('edit-exercise-name');
+    const mobileEditDropdown = document.getElementById('mobile-edit-exercise-dropdown');
+    
+    if (editExerciseInput && mobileEditDropdown) {
+      const exercises = getAllAvailableExercises();
+      
+      if (isMobileDevice()) {
+        // Mobile: Use custom dropdown, disable datalist
+        editExerciseInput.removeAttribute('list');
+        
+        // Show mobile dropdown on focus
+        editExerciseInput.addEventListener('focus', function() {
+          showMobileDropdown(exercises, editExerciseInput, mobileEditDropdown);
+        });
+        
+        // Filter dropdown on input
+        editExerciseInput.addEventListener('input', function() {
+          const value = this.value.toLowerCase();
+          const filtered = exercises.filter(ex => 
+            ex.toLowerCase().includes(value)
+          );
+          showMobileDropdown(filtered, editExerciseInput, mobileEditDropdown);
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!editExerciseInput.contains(e.target) && !mobileEditDropdown.contains(e.target)) {
+            mobileEditDropdown.classList.add('hidden');
+          }
+        });
+      } else {
+        // Desktop: Use native datalist
+        editExerciseInput.setAttribute('list', 'edit-exercise-datalist');
+        mobileEditDropdown.classList.add('hidden');
+      }
+    }
+  }, 100);
   
   // Event Listener für das Formular
   const form = document.getElementById('edit-exercise-form');
