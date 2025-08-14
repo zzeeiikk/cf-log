@@ -2226,6 +2226,38 @@ function hideExerciseDetails() {
   }
 }
 
+// Update exercise details modal if it's open
+function updateExerciseDetailsModal() {
+  const modal = document.getElementById('exercise-details-modal');
+  if (modal) {
+    // Get the current exercise name from the modal title
+    const titleElement = modal.querySelector('h3');
+    if (titleElement) {
+      const titleText = titleElement.textContent;
+      const exerciseName = titleText.replace(' - Details', '');
+      
+      // Store current scroll position
+      const modalContent = modal.querySelector('.overflow-y-auto');
+      const scrollPosition = modalContent ? modalContent.scrollTop : 0;
+      
+      // Close current modal and reopen with updated data
+      hideExerciseDetails();
+      showExerciseDetails(exerciseName);
+      
+      // Restore scroll position after modal is recreated
+      setTimeout(() => {
+        const newModal = document.getElementById('exercise-details-modal');
+        if (newModal) {
+          const newModalContent = newModal.querySelector('.overflow-y-auto');
+          if (newModalContent) {
+            newModalContent.scrollTop = scrollPosition;
+          }
+        }
+      }, 100);
+    }
+  }
+}
+
 function showEditExerciseModal(exercise) {
   // Erstelle Modal HTML
   const modalHTML = `
@@ -2447,10 +2479,14 @@ function showEditExerciseModal(exercise) {
         isNote: isNoteOnly
       };
       
-      await saveData();
-      hideEditExerciseModal();
-      renderDashboard();
-      showNotification(isNoteOnly ? 'Notiz erfolgreich aktualisiert!' : 'Training erfolgreich aktualisiert!', 'success');
+              await saveData();
+        hideEditExerciseModal();
+        
+        // Update exercise details modal if it's open
+        updateExerciseDetailsModal();
+        
+        renderDashboard();
+        showNotification(isNoteOnly ? 'Notiz erfolgreich aktualisiert!' : 'Training erfolgreich aktualisiert!', 'success');
     }
   });
   }
@@ -2956,6 +2992,10 @@ function deleteExercise(id) {
   
   appData.exercises = appData.exercises.filter(e => e.id !== id);
   saveData();
+  
+  // Update exercise details modal if it's open
+  updateExerciseDetailsModal();
+  
   renderDashboard();
   showNotification('Training gelöscht!', 'success');
 }
@@ -3201,18 +3241,48 @@ async function saveData() {
 }
 
 function showNotification(message, type = 'info') {
+  // Create or get notification container
+  let container = document.getElementById('notification-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'notification-container';
+    container.className = 'fixed top-4 right-4 z-50 space-y-2 max-w-sm';
+    document.body.appendChild(container);
+  }
+  
+  // Create notification element
   const notification = document.createElement('div');
-  notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 max-w-sm ${
+  notification.className = `p-4 rounded-lg shadow-lg transform transition-all duration-300 ${
     type === 'success' ? 'bg-green-500 text-white' :
     type === 'error' ? 'bg-red-500 text-white' :
     'bg-blue-500 text-white'
   }`;
+  notification.style.transform = 'translateX(100%)';
+  notification.style.opacity = '0';
   notification.textContent = message;
   
-  document.body.appendChild(notification);
+  // Add to container
+  container.appendChild(notification);
   
+  // Animate in
   setTimeout(() => {
-    notification.remove();
+    notification.style.transform = 'translateX(0)';
+    notification.style.opacity = '1';
+  }, 10);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.style.transform = 'translateX(100%)';
+    notification.style.opacity = '0';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+      // Remove container if empty
+      if (container.children.length === 0) {
+        container.remove();
+      }
+    }, 300);
   }, 3000);
 }
 
