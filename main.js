@@ -1064,30 +1064,33 @@ function renderDashboard() {
                   </h2>
                   <div class="flex flex-wrap bg-gray-100 rounded-lg p-1 gap-1">
                     <button onclick="switchView('training')" 
-                            class="flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                            class="flex-1 min-w-0 px-4 py-1 rounded-md text-xs font-medium transition-colors flex flex-col items-center ${
                               currentView === 'training' 
                                 ? 'bg-white text-gray-900 shadow-sm' 
                                 : 'text-gray-600 hover:text-gray-900'
                             }">
-                      <span class="hidden sm:inline">💪 Training</span>
+                      <span class="hidden sm:block">💪</span>
+                      <span class="hidden sm:block">Training</span>
                       <span class="sm:hidden">💪 Train</span>
                     </button>
                     <button onclick="switchView('activity')" 
-                            class="flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                            class="flex-1 min-w-0 px-4 py-1 rounded-md text-xs font-medium transition-colors flex flex-col items-center ${
                               currentView === 'activity' 
                                 ? 'bg-white text-gray-900 shadow-sm' 
                                 : 'text-gray-600 hover:text-gray-900'
                             }">
-                      <span class="hidden sm:inline">📝 Aktivitätslog</span>
+                      <span class="hidden sm:block">📝</span>
+                      <span class="hidden sm:block">Aktivitätslog</span>
                       <span class="sm:hidden">📝 Log</span>
                     </button>
-                                        <button onclick="switchView('summary')" 
-                            class="flex-1 min-w-0 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    <button onclick="switchView('summary')" 
+                            class="flex-1 min-w-0 px-4 py-1 rounded-md text-xs font-medium transition-colors flex flex-col items-center ${
                               currentView === 'summary' 
                                 ? 'bg-white text-gray-900 shadow-sm' 
                                 : 'text-gray-600 hover:text-gray-900'
                             }">
-                      <span class="hidden sm:inline">📊 Statistiken</span>
+                      <span class="hidden sm:block">📊</span>
+                      <span class="hidden sm:block">Statistiken</span>
                       <span class="sm:hidden">📊 Stats</span>
                     </button>
                   </div>
@@ -1671,9 +1674,10 @@ function renderAddExerciseModal() {
                 </div>
               </div>
               <div class="flex flex-wrap gap-2 mt-2">
-                <button type="button" onclick="addSet()" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
+                <button type="button" onclick="addSet()" class="grow text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
                 <button type="button" onclick="addMultipleSets(3)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 3 Sets</button>
                 <button type="button" onclick="addMultipleSets(5)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 5 Sets</button>
+                <button type="button" onclick="addMultipleSets(7)" class="hidden sm:inline-block text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
               </div>
             </div>
             
@@ -2197,9 +2201,10 @@ function showEditExerciseModal(exercise) {
                 `).join('')}
               </div>
               <div class="flex flex-wrap gap-2 mt-2">
-                <button type="button" onclick="addEditSet()" class="text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
+                <button type="button" onclick="addEditSet()" class="grow text-blue-600 hover:text-blue-800 text-sm px-3 py-1 border border-blue-300 rounded-lg hover:bg-blue-50">+ Set hinzufügen</button>
                 <button type="button" onclick="addMultipleEditSets(3)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 3 Sets</button>
                 <button type="button" onclick="addMultipleEditSets(5)" class="text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 5 Sets</button>
+                <button type="button" onclick="addMultipleEditSets(7)" class="hidden sm:inline-block text-green-600 hover:text-green-800 text-sm px-3 py-1 border border-green-300 rounded-lg hover:bg-green-50">+ 7 Sets</button>
               </div>
             </div>
             `}
