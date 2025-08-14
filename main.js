@@ -4,6 +4,12 @@
 const FILE_NAME = 'cf-log.json';
 const GITHUB_API = 'https://api.github.com';
 
+// Global variable to track last edited exercise for highlighting
+let lastEditedExerciseId = null;
+
+// Global variable to track expanded training history sections
+let expandedSections = new Set();
+
 // PWA Installation Support
 let deferredPrompt;
 let installButton = null;
@@ -1212,6 +1218,14 @@ function renderDashboard() {
 
   // Event Listeners für Modals
   setupModalEventListeners();
+  
+  // Highlight last edited exercise if available
+  if (lastEditedExerciseId) {
+    setTimeout(() => {
+      highlightUpdatedExercise(lastEditedExerciseId);
+      lastEditedExerciseId = null; // Reset after highlighting
+    }, 100);
+  }
 }
 
 function switchView(view) {
@@ -1232,10 +1246,14 @@ function toggleTrainingHistory(exerciseName) {
     historyDiv.classList.remove('hidden');
     icon.classList.add('rotate-180');
     buttonText.textContent = 'Weniger anzeigen';
+    // Store expanded state
+    expandedSections.add(exerciseName);
   } else {
     historyDiv.classList.add('hidden');
     icon.classList.remove('rotate-180');
     buttonText.textContent = `Alle ${appData.exercises.filter(ex => ex.exercise === exerciseName).length} Trainings anzeigen`;
+    // Remove from expanded state
+    expandedSections.delete(exerciseName);
   }
 }
 
@@ -1494,7 +1512,7 @@ function renderTrainingMode() {
             })
             .slice(0, 2)
             .map(training => `
-              <div class="p-2 ${training.isNote ? 'bg-purple-50' : 'bg-gray-50'} rounded text-sm group relative">
+              <div class="p-2 ${training.isNote ? 'bg-purple-50' : 'bg-gray-50'} rounded text-sm group relative" data-exercise-id="${training.id}">
                 <div class="flex justify-between items-start">
                   <div class="flex items-center space-x-2">
                     <span class="font-medium">${formatDate(training.date)}</span>
@@ -1535,8 +1553,8 @@ function renderTrainingMode() {
           <div class="mt-3 pt-3 border-t border-gray-200">
             <button onclick="toggleTrainingHistory('${exerciseName}')" 
                     class="w-full text-left text-gray-500 hover:text-blue-600 text-sm flex items-center justify-between transition-colors">
-              <span>Alle ${exercises.length} ${isNoteGroup ? 'Notizen' : 'Trainings'} anzeigen</span>
-              <svg id="toggle-icon-${exerciseName.replace(/\s+/g, '-')}" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span>${expandedSections.has(exerciseName) ? 'Weniger anzeigen' : `Alle ${exercises.length} ${isNoteGroup ? 'Notizen' : 'Trainings'} anzeigen`}</span>
+              <svg id="toggle-icon-${exerciseName.replace(/\s+/g, '-')}" class="w-4 h-4 transform transition-transform ${expandedSections.has(exerciseName) ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
               </svg>
             </button>
@@ -1544,7 +1562,7 @@ function renderTrainingMode() {
         ` : ''}
         
         <!-- Ausgeklappte Historie -->
-        <div id="training-history-${exerciseName.replace(/\s+/g, '-')}" class="hidden mt-3 pt-3 border-t border-gray-200">
+        <div id="training-history-${exerciseName.replace(/\s+/g, '-')}" class="${expandedSections.has(exerciseName) ? '' : 'hidden'} mt-3 pt-3 border-t border-gray-200">
           <div class="space-y-2">
             ${exercises
               .sort((a, b) => {
@@ -1556,7 +1574,7 @@ function renderTrainingMode() {
               })
               .slice(2)
               .map(training => `
-                <div class="p-2 bg-gray-50 rounded text-sm group relative">
+                <div class="p-2 bg-gray-50 rounded text-sm group relative" data-exercise-id="${training.id}">
                   <div class="flex justify-between items-start">
                     <div class="flex items-center space-x-2">
                       <span class="font-medium">${formatDate(training.date)}</span>
@@ -1616,7 +1634,7 @@ function renderExerciseList() {
       return b.id.localeCompare(a.id);
     })
     .map(exercise => `
-      <div class="p-6 hover:bg-gray-50 transition-colors">
+      <div class="p-6 hover:bg-gray-50 transition-colors" data-exercise-id="${exercise.id}">
         <div class="flex justify-between items-start mb-3">
           <div>
             <h3 class="text-lg font-semibold text-gray-900">${formatDate(exercise.date)}</h3>
@@ -2271,12 +2289,28 @@ function highlightUpdatedExercise(exerciseId) {
     exerciseElement.classList.add('transition-all', 'duration-500');
     
     // Add green flash effect
-    exerciseElement.classList.add('bg-green-100', 'border-green-300');
+    exerciseElement.classList.add('bg-green-50', 'border-green-200');
     
-    // Remove the effect after 2 seconds
+    // Remove the effect after 750ms
     setTimeout(() => {
-      exerciseElement.classList.remove('bg-green-100', 'border-green-300');
+      exerciseElement.classList.remove('bg-green-50', 'border-green-200');
     }, 750);
+  }
+}
+
+// Highlight deleted set with red flash effect
+function highlightDeletedSet(setRow) {
+  if (setRow) {
+    // Add transition classes for smooth animation
+    setRow.classList.add('transition-all', 'duration-300');
+    
+    // Add red flash effect
+    setRow.classList.add('bg-red-50', 'border-red-200');
+    
+    // Remove the effect after 500ms
+    setTimeout(() => {
+      setRow.classList.remove('bg-red-50', 'border-red-200');
+    }, 500);
   }
 }
 
@@ -2504,6 +2538,9 @@ function showEditExerciseModal(exercise) {
               await saveData();
         hideEditExerciseModal();
         
+        // Store the edited exercise ID for highlighting
+        lastEditedExerciseId = id;
+        
         // Update exercise details modal if it's open
         updateExerciseDetailsModal(id);
         
@@ -2577,20 +2614,25 @@ function removeEditSet(button) {
     return;
   }
   
-  // Entferne das Set
-  setRow.remove();
+  // Highlight the set before removing it
+  highlightDeletedSet(setRow);
   
-  // Entferne Divider, die nicht mehr benötigt werden
-  const dividers = container.querySelectorAll('.set-divider');
-  dividers.forEach((divider, index) => {
-    // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
-    const nextElement = divider.nextElementSibling;
-    if (!nextElement || !nextElement.classList.contains('edit-set-row')) {
-      divider.remove();
-    }
-  });
-  
-  updateEditSetNumbers();
+  // Remove the set after a short delay to show the animation
+  setTimeout(() => {
+    setRow.remove();
+    
+    // Entferne Divider, die nicht mehr benötigt werden
+    const dividers = container.querySelectorAll('.set-divider');
+    dividers.forEach((divider, index) => {
+      // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
+      const nextElement = divider.nextElementSibling;
+      if (!nextElement || !nextElement.classList.contains('edit-set-row')) {
+        divider.remove();
+      }
+    });
+    
+    updateEditSetNumbers();
+  }, 300); // Wait for animation to complete
 }
 
 function updateEditSetNumbers() {
@@ -2985,20 +3027,25 @@ function removeSet(button) {
     return;
   }
   
-  // Entferne das Set
-  setRow.remove();
+  // Highlight the set before removing it
+  highlightDeletedSet(setRow);
   
-  // Entferne Divider, die nicht mehr benötigt werden
-  const dividers = container.querySelectorAll('.set-divider');
-  dividers.forEach((divider, index) => {
-    // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
-    const nextElement = divider.nextElementSibling;
-    if (!nextElement || !nextElement.classList.contains('set-row')) {
-      divider.remove();
-    }
-  });
-  
-  updateSetNumbers();
+  // Remove the set after a short delay to show the animation
+  setTimeout(() => {
+    setRow.remove();
+    
+    // Entferne Divider, die nicht mehr benötigt werden
+    const dividers = container.querySelectorAll('.set-divider');
+    dividers.forEach((divider, index) => {
+      // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
+      const nextElement = divider.nextElementSibling;
+      if (!nextElement || !nextElement.classList.contains('set-row')) {
+        divider.remove();
+      }
+    });
+    
+    updateSetNumbers();
+  }, 300); // Wait for animation to complete
 }
 
 function editExercise(id) {
