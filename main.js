@@ -2170,7 +2170,7 @@ function showExerciseDetails(exerciseName) {
             <div class="space-y-4">
               <h4 class="text-lg font-semibold text-gray-900">Trainingsverlauf</h4>
               ${exerciseTrainings.map(training => `
-                <div class="border border-gray-200 rounded-lg p-4">
+                <div class="border border-gray-200 rounded-lg p-4" data-exercise-id="${training.id}">
                   <div class="flex justify-between items-start mb-3">
                     <div>
                       <div class="font-medium text-gray-900">${formatDate(training.date)}</div>
@@ -2227,7 +2227,7 @@ function hideExerciseDetails() {
 }
 
 // Update exercise details modal if it's open
-function updateExerciseDetailsModal() {
+function updateExerciseDetailsModal(updatedExerciseId = null) {
   const modal = document.getElementById('exercise-details-modal');
   if (modal) {
     // Get the current exercise name from the modal title
@@ -2244,7 +2244,7 @@ function updateExerciseDetailsModal() {
       hideExerciseDetails();
       showExerciseDetails(exerciseName);
       
-      // Restore scroll position after modal is recreated
+      // Restore scroll position and highlight updated exercise after modal is recreated
       setTimeout(() => {
         const newModal = document.getElementById('exercise-details-modal');
         if (newModal) {
@@ -2252,9 +2252,31 @@ function updateExerciseDetailsModal() {
           if (newModalContent) {
             newModalContent.scrollTop = scrollPosition;
           }
+          
+          // Highlight the updated exercise if ID is provided
+          if (updatedExerciseId) {
+            highlightUpdatedExercise(updatedExerciseId);
+          }
         }
       }, 100);
     }
+  }
+}
+
+// Highlight updated exercise with green flash effect
+function highlightUpdatedExercise(exerciseId) {
+  const exerciseElement = document.querySelector(`[data-exercise-id="${exerciseId}"]`);
+  if (exerciseElement) {
+    // Add transition classes for smooth animation
+    exerciseElement.classList.add('transition-all', 'duration-500');
+    
+    // Add green flash effect
+    exerciseElement.classList.add('bg-green-100', 'border-green-300');
+    
+    // Remove the effect after 2 seconds
+    setTimeout(() => {
+      exerciseElement.classList.remove('bg-green-100', 'border-green-300');
+    }, 750);
   }
 }
 
@@ -2483,7 +2505,7 @@ function showEditExerciseModal(exercise) {
         hideEditExerciseModal();
         
         // Update exercise details modal if it's open
-        updateExerciseDetailsModal();
+        updateExerciseDetailsModal(id);
         
         renderDashboard();
         showNotification(isNoteOnly ? 'Notiz erfolgreich aktualisiert!' : 'Training erfolgreich aktualisiert!', 'success');
@@ -2993,7 +3015,7 @@ function deleteExercise(id) {
   appData.exercises = appData.exercises.filter(e => e.id !== id);
   saveData();
   
-  // Update exercise details modal if it's open
+  // Update exercise details modal if it's open (no highlighting for deleted items)
   updateExerciseDetailsModal();
   
   renderDashboard();
