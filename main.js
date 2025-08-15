@@ -1,9 +1,16 @@
+// REFACT_ ===== MODULE: config.js =====
+// Konfigurationskonstanten und globale Einstellungen
+// REFACT_ START: config.js
 // cf-log - Flexibles Trainingslog mit GitHub Gists
 // Version 1.0 - Verbesserte JSON-Struktur und moderne UI
 
 const FILE_NAME = 'cf-log.json';
 const GITHUB_API = 'https://api.github.com';
+// REFACT_ END: config.js
 
+// REFACT_ ===== MODULE: state.js =====
+// Globale Zustandsvariablen und State Management
+// REFACT_ START: state.js
 // Global variable to track last edited exercise for highlighting
 let lastEditedExerciseId = null;
 
@@ -13,7 +20,11 @@ let expandedSections = new Set();
 // PWA Installation Support
 let deferredPrompt;
 let installButton = null;
+// REFACT_ END: state.js
 
+// REFACT_ ===== MODULE: pwa.js =====
+// PWA (Progressive Web App) Funktionalität und Installation
+// REFACT_ START: pwa.js
 // PWA Install Event Listener
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -279,7 +290,11 @@ function showPWAInstallGuide() {
 function hidePWAInstallGuide() {
   hideModal('pwa-install-guide-modal', true);
 }
+// REFACT_ END: pwa.js
 
+// REFACT_ ===== MODULE: mobile.js =====
+// Mobile-spezifische UI-Funktionen und Dropdown-Handling
+// REFACT_ START: mobile.js
 // Show mobile dropdown for exercise selection
 function showMobileDropdown(exercises, input, dropdown) {
   if (exercises.length === 0) {
@@ -316,7 +331,11 @@ function selectExercise(exerciseName, inputId) {
     editDropdown.classList.add('hidden');
   }
 }
+// REFACT_ END: mobile.js
 
+// REFACT_ ===== MODULE: settings.js =====
+// Settings-Management und Tab-Navigation
+// REFACT_ START: settings.js
 // Switch settings tab
 function switchSettingsTab(tabName) {
   // Hide all tab contents
@@ -338,7 +357,11 @@ function switchSettingsTab(tabName) {
   activeTab.classList.add('bg-white', 'text-gray-900', 'shadow-sm');
   activeTab.classList.remove('text-gray-600', 'hover:text-gray-900');
 }
+// REFACT_ END: settings.js
 
+// REFACT_ ===== MODULE: storage.js =====
+// Storage Provider Klassen und Datenpersistierung
+// REFACT_ START: storage.js
 // Storage Provider Interface
 class StorageProvider {
   async save(data) { throw new Error('save() must be implemented'); }
@@ -520,7 +543,11 @@ class WebDAVProvider extends StorageProvider {
     }
   }
 }
+// REFACT_ END: storage.js
 
+// REFACT_ ===== MODULE: data.js =====
+// Datenstruktur, globale Variablen und App-State
+// REFACT_ START: data.js
 // Globaler Storage Provider
 let currentStorageProvider = null;
 
@@ -559,7 +586,11 @@ let appData = {
 
 // UI State
 let currentView = getDefaultView(); // 'summary', 'activity' oder 'training'
+// REFACT_ END: data.js
 
+// REFACT_ ===== MODULE: utils.js =====
+// Utility-Funktionen, Formatierung und Hilfsfunktionen
+// REFACT_ START: utils.js
 // Funktion zur Bestimmung der Standard-Ansicht basierend auf Bildschirmgröße
 function getDefaultView() {
   // Mobile (< 768px): Training Mode
@@ -722,7 +753,11 @@ function formatSetsIntelligently(sets) {
     }
   }
 }
+// REFACT_ END: utils.js
 
+// REFACT_ ===== MODULE: storage-helpers.js =====
+// Storage Provider Helper Functions und Legacy-Funktionen
+// REFACT_ START: storage-helpers.js
 // Storage Provider Helper Functions
 async function createStorageProvider(type, config) {
   switch (type) {
@@ -755,7 +790,11 @@ async function updateGist(token, gistId, data) {
   const provider = new GitHubGistProvider(token, gistId);
   return await provider.save(data);
 }
+// REFACT_ END: storage-helpers.js
 
+// REFACT_ ===== MODULE: ui.js =====
+// UI-Rendering und Dashboard-Funktionen
+// REFACT_ START: ui.js
 // UI Functions
 function renderOnboarding() {
   document.getElementById('app').innerHTML = `
@@ -3392,6 +3431,11 @@ async function main() {
   }
 }
 
+// REFACT_ END: ui.js
+
+// REFACT_ ===== MODULE: main.js =====
+// Hauptfunktion und App-Initialisierung
+// REFACT_ START: main.js
 // Initialize app
 main();
 
@@ -3451,5 +3495,4 @@ function setupMobileDropdown(inputId, dropdownId, datalistId = null) {
     dropdown.classList.add('hidden');
   }
 }
-
-
+// REFACT_ END: main.js
