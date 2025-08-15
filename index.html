@@ -24,9 +24,9 @@
       }
     }
   </script>
-  <link rel="icon" href="cf-log.jpg?v=2" type="image/jpeg">
-  <link rel="shortcut icon" href="cf-log.jpg?v=2" type="image/jpeg">
-  <link rel="icon" type="image/jpeg" href="cf-log.jpg?v=2">
+  <link rel="icon" href="data/cf-log.jpg?v=2" type="image/jpeg">
+  <link rel="shortcut icon" href="data/cf-log.jpg?v=2" type="image/jpeg">
+  <link rel="icon" type="image/jpeg" href="data/cf-log.jpg?v=2">
   <meta name="description" content="Dein flexibles Trainingslog mit GitHub Gists. Kein Backend, keine Anmeldung nötig. Speichere deine Trainingsdaten sicher in JSON-Format." />
   <!-- <meta name="theme-color" content="#007AFF"> -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,13 +36,13 @@
   <link rel="manifest" href="manifest.json">
   
   <!-- Apple Touch Icon -->
-  <link rel="apple-touch-icon" href="cf-log.jpg?v=2">
+  <link rel="apple-touch-icon" href="data/cf-log.jpg?v=2">
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased">
   <!-- Loading Spinner -->
   <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
     <div class="text-center">
-      <img src="cf-log.jpg" alt="cf-log Logo" class="w-16 h-16 mx-auto mb-4 animate-bounce rounded-lg">
+      <img src="data/cf-log.jpg" alt="cf-log Logo" class="w-16 h-16 mx-auto mb-4 animate-bounce rounded-lg">
       <div class="text-lg font-semibold text-gray-700">cf-log lädt...</div>
     </div>
   </div>
@@ -51,15 +51,8 @@
   <div id="app" class="min-h-screen"></div>
 
   <!-- Scripts -->
-  <!-- Independent modules (no dependencies) -->
-  <script src="src/config.js"></script>
-  
-  <!-- Modules with dependencies -->
-  <script src="src/state.js"></script>
-  <script src="src/utils.js"></script>
-  
-  <!-- Main application -->
-  <script src="main.js"></script>
+  <!-- Main application (loads all modules dynamically) -->
+  <script src="src/main.js"></script>
   
   <!-- Hide loading spinner when app is ready -->
   <script>

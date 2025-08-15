@@ -19,15 +19,15 @@ Ein modernes, flexibles Trainingslog mit GitHub Gists oder WebDAV als Datenspeic
 <div align="center">
 
 ### 📱 Mobile Trainings View
-<img src="img/mobile-trainings-view.PNG" width="248"><br>
+<img src="data/img/mobile-trainings-view.jpeg" width="248"><br>
 *Optimiert für das Training - übersichtlich und ablenkungsfrei*
 
 ### 📝 Aktivitäts Log
-![Aktivitäts Log](img/log-view.png)
+![Aktivitäts Log](data/img/log-view.png)
 *Chronologische Übersicht aller Trainings mit Details*
 
 ### 📊 Statistik View
-![Statistik View](img/stats-view.png)
+![Statistik View](data/img/stats-view.png)
 *Detaillierte Statistiken und Jahresvergleiche*
 
 </div>
