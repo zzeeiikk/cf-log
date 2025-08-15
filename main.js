@@ -1,75 +1,8 @@
 // cf-log - Flexibles Trainingslog mit GitHub Gists
 // Version 1.0 - Verbesserte JSON-Struktur und moderne UI
 
-// Konstanten
 const FILE_NAME = 'cf-log.json';
 const GITHUB_API = 'https://api.github.com';
-
-// localStorage Schlüssel
-const STORAGE_KEYS = {
-  // PWA
-  INSTALL_PROMPT_SHOWN: 'cf_log_install_prompt_shown',
-  PWA_HINT_ENABLED: 'cf_log_pwa_hint_enabled',
-  
-  // Storage
-  STORAGE_TYPE: 'cf_log_storage_type',
-  TOKEN: 'cf_log_token',
-  GIST_ID: 'cf_log_gist_id',
-  USER_NAME: 'cf_log_user_name',
-  
-  // WebDAV
-  WEBDAV_URL: 'cf_log_webdav_url',
-  WEBDAV_USERNAME: 'cf_log_webdav_username',
-  WEBDAV_PASSWORD: 'cf_log_webdav_password',
-  WEBDAV_FILENAME: 'cf_log_webdav_filename',
-  
-  // Demo
-  DEMO_MODE: 'cf_log_demo_mode'
-};
-
-// CSS Klassen
-const CSS_CLASSES = {
-  HIDDEN: 'hidden',
-  SET_ROW: 'set-row',
-  EDIT_SET_ROW: 'edit-set-row',
-  SET_DIVIDER: 'set-divider',
-  SETTINGS_TAB_CONTENT: 'settings-tab-content'
-};
-
-// Modal IDs
-const MODAL_IDS = {
-  ADD_EXERCISE: 'add-exercise-modal',
-  SETTINGS: 'settings-modal',
-  IMPORT: 'import-modal',
-  EDIT_EXERCISE: 'edit-exercise-modal',
-  EXERCISE_DETAILS: 'exercise-details-modal',
-  TRAINING_DETAILS: 'training-details-modal',
-  TOKEN: 'token-modal',
-  PWA_INSTALL_GUIDE: 'pwa-install-guide-modal'
-};
-
-// Container IDs
-const CONTAINER_IDS = {
-  SETS: 'sets-container',
-  EDIT_SETS: 'edit-sets-container',
-  EXERCISE_DATALIST: 'exercise-datalist',
-  EDIT_EXERCISE_DATALIST: 'edit-exercise-datalist',
-  MOBILE_EXERCISE_DROPDOWN: 'mobile-exercise-dropdown',
-  MOBILE_EDIT_EXERCISE_DROPDOWN: 'mobile-edit-exercise-dropdown'
-};
-
-// localStorage Helper Funktionen
-function getStorageItem(key) {
-  return localStorage.getItem(STORAGE_KEYS[key]);
-}
-
-function setStorageItem(key, value) {
-  localStorage.setItem(STORAGE_KEYS[key], value);
-}
-
-function removeStorageItem(key) {
-  localStorage.removeItem(STORAGE_KEYS[key]);
-}
 
 // Global variable to track last edited exercise for highlighting
 let lastEditedExerciseId = null;
@@ -94,7 +27,7 @@ function showInstallPromptAfterLogin() {
   setTimeout(() => {
     if (isMobileDevice()) {
       // Check if we should show the prompt
-      const lastShown = getStorageItem('INSTALL_PROMPT_SHOWN');
+      const lastShown = localStorage.getItem('cf_log_install_prompt_shown');
       const now = Date.now();
       if (!lastShown || (now - parseInt(lastShown)) > 24 * 60 * 60 * 1000) {
         // Show unified banner (works for all browsers)
@@ -122,12 +55,12 @@ function showInstallPrompt() {
   }
   
   // Check if user has disabled PWA hints
-  if (getStorageItem('PWA_HINT_ENABLED') === 'false') {
+  if (localStorage.getItem('cf_log_pwa_hint_enabled') === 'false') {
     return;
   }
   
   // Check if already shown recently
-  const lastShown = getStorageItem('INSTALL_PROMPT_SHOWN');
+  const lastShown = localStorage.getItem('cf_log_install_prompt_shown');
   const now = Date.now();
   if (lastShown && (now - parseInt(lastShown)) < 24 * 60 * 60 * 1000) return; // 24 hours
   
@@ -172,7 +105,7 @@ function showInstallPrompt() {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === 'accepted') {
-        setStorageItem('INSTALL_PROMPT_SHOWN', now.toString());
+        localStorage.setItem('cf_log_install_prompt_shown', now.toString());
       }
       deferredPrompt = null;
     } else {
@@ -185,22 +118,22 @@ function showInstallPrompt() {
   // Dismiss button click
   document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
     hideInstallPrompt();
-    setStorageItem('INSTALL_PROMPT_SHOWN', now.toString());
+    localStorage.setItem('cf_log_install_prompt_shown', now.toString());
   });
 }
 
 // Force show install prompt (for manual trigger)
 function forceShowInstallPrompt() {
   // Reset the "shown recently" flag
-  removeStorageItem('INSTALL_PROMPT_SHOWN');
+  localStorage.removeItem('cf_log_install_prompt_shown');
   // Temporarily enable PWA hints for this manual trigger
-  const originalSetting = getStorageItem('PWA_HINT_ENABLED');
-  setStorageItem('PWA_HINT_ENABLED', 'true');
+  const originalSetting = localStorage.getItem('cf_log_pwa_hint_enabled');
+  localStorage.setItem('cf_log_pwa_hint_enabled', 'true');
   showInstallPrompt();
   // Restore original setting after showing
   if (originalSetting === 'false') {
     setTimeout(() => {
-      setStorageItem('PWA_HINT_ENABLED', 'false');
+      localStorage.setItem('cf_log_pwa_hint_enabled', 'false');
     }, 100);
   }
 }
@@ -1017,10 +950,10 @@ function renderOnboarding() {
     try {
       appData.user.name = name;
       const gistId = await createGist(token, appData);
-      setStorageItem('STORAGE_TYPE', 'github');
-      setStorageItem('TOKEN', token);
-      setStorageItem('GIST_ID', gistId);
-      setStorageItem('USER_NAME', name);
+      localStorage.setItem('cf_log_storage_type', 'github');
+      localStorage.setItem('cf_log_token', token);
+      localStorage.setItem('cf_log_gist_id', gistId);
+      localStorage.setItem('cf_log_user_name', name);
       window.location.reload();
     } catch (err) {
       showNotification('Fehler: ' + err.message, 'error');
@@ -1038,18 +971,18 @@ function renderOnboarding() {
         // Bestehenden Gist laden
         const data = await loadGist(token, gistId);
         appData = { ...appData, ...data };
-        setStorageItem('STORAGE_TYPE', 'github');
-        setStorageItem('TOKEN', token);
-        setStorageItem('GIST_ID', gistId);
-        setStorageItem('USER_NAME', appData.user.name);
+        localStorage.setItem('cf_log_storage_type', 'github');
+        localStorage.setItem('cf_log_token', token);
+        localStorage.setItem('cf_log_gist_id', gistId);
+        localStorage.setItem('cf_log_user_name', appData.user.name);
       } else {
         // Neuen Gist erstellen
         appData.user.name = 'Benutzer';
         const newGistId = await createGist(token, appData);
-        setStorageItem('STORAGE_TYPE', 'github');
-        setStorageItem('TOKEN', token);
-        setStorageItem('GIST_ID', newGistId);
-        setStorageItem('USER_NAME', appData.user.name);
+        localStorage.setItem('cf_log_storage_type', 'github');
+        localStorage.setItem('cf_log_token', token);
+        localStorage.setItem('cf_log_gist_id', newGistId);
+        localStorage.setItem('cf_log_user_name', appData.user.name);
       }
       window.location.reload();
     } catch (err) {
@@ -1082,12 +1015,12 @@ function renderOnboarding() {
         await provider.save(appData);
       }
       
-      setStorageItem('STORAGE_TYPE', 'webdav');
-      setStorageItem('WEBDAV_URL', url);
-      setStorageItem('WEBDAV_USERNAME', username);
-      setStorageItem('WEBDAV_PASSWORD', password);
-      setStorageItem('WEBDAV_FILENAME', filename);
-      setStorageItem('USER_NAME', appData.user.name);
+      localStorage.setItem('cf_log_storage_type', 'webdav');
+      localStorage.setItem('cf_log_webdav_url', url);
+      localStorage.setItem('cf_log_webdav_username', username);
+      localStorage.setItem('cf_log_webdav_password', password);
+      localStorage.setItem('cf_log_webdav_filename', filename);
+      localStorage.setItem('cf_log_user_name', appData.user.name);
       
       window.location.reload();
     } catch (err) {
@@ -1109,8 +1042,8 @@ function renderOnboarding() {
       appData = { ...appData, ...demoData };
       
       // Lokale Speicherung für Demo-Modus
-      setStorageItem('DEMO_MODE', 'true');
-      setStorageItem('USER_NAME', demoData.user.name);
+      localStorage.setItem('cf_log_demo_mode', 'true');
+      localStorage.setItem('cf_log_user_name', demoData.user.name);
       
       // Dashboard anzeigen
       renderDashboard();
@@ -1123,9 +1056,9 @@ function renderOnboarding() {
 }
 
 function renderDashboard() {
-  const token = getStorageItem('TOKEN');
-  const gistId = getStorageItem('GIST_ID');
-  const userName = getStorageItem('USER_NAME');
+  const token = localStorage.getItem('cf_log_token');
+  const gistId = localStorage.getItem('cf_log_gist_id');
+  const userName = localStorage.getItem('cf_log_user_name');
 
   document.getElementById('app').innerHTML = `
     <div class="min-h-screen bg-gray-50">
@@ -1941,69 +1874,69 @@ function renderSettingsModal() {
               <div class="mt-6">
                 <h4 class="text-sm font-medium text-gray-900 mb-3">Speicher-Informationen</h4>
                 <div class="space-y-3 text-sm">
-                                  ${(() => {
-                  const storageType = getStorageItem('STORAGE_TYPE');
-                  if (storageType === 'github') {
-                    return `
-                <div class="bg-blue-50 p-3 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                          <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                          </svg>
-                          <span class="font-medium text-blue-900">GitHub Gists</span>
-                        </div>
-                        <div class="text-blue-700 font-mono break-all mb-2">Gist-ID: ${getStorageItem('GIST_ID') || 'Nicht verfügbar'}</div>
-                        <div class="text-blue-700 font-mono break-all mb-2">Token: ${getStorageItem('TOKEN') ?
-                          getStorageItem('TOKEN').substring(0, 8) + '••••••••••••••••' :
-                          'Nicht verfügbar'}</div>
-                        <div class="flex space-x-2">
-                  <button onclick="copyToClipboard('${getStorageItem('GIST_ID') || ''}')"
+                  ${(() => {
+                    const storageType = localStorage.getItem('cf_log_storage_type');
+                    if (storageType === 'github') {
+                      return `
+                  <div class="bg-blue-50 p-3 rounded-lg">
+                          <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            <span class="font-medium text-blue-900">GitHub Gists</span>
+                          </div>
+                          <div class="text-blue-700 font-mono break-all mb-2">Gist-ID: ${localStorage.getItem('cf_log_gist_id') || 'Nicht verfügbar'}</div>
+                          <div class="text-blue-700 font-mono break-all mb-2">Token: ${localStorage.getItem('cf_log_token') ? 
+                            localStorage.getItem('cf_log_token').substring(0, 8) + '••••••••••••••••' : 
+                            'Nicht verfügbar'}</div>
+                          <div class="flex space-x-2">
+                    <button onclick="copyToClipboard('${localStorage.getItem('cf_log_gist_id') || ''}')" 
                                     class="text-blue-600 hover:text-blue-800 text-xs">
-                            📋 Gist-ID kopieren
-                          </button>
-                          <button onclick="copyToClipboard('${getStorageItem('TOKEN') || ''}')"
+                              📋 Gist-ID kopieren
+                            </button>
+                            <button onclick="copyToClipboard('${localStorage.getItem('cf_log_token') || ''}')" 
                                     class="text-blue-600 hover:text-blue-800 text-xs">
-                            📋 Token kopieren
-                          </button>
-                          <button onclick="toggleTokenVisibility()"
+                              📋 Token kopieren
+                            </button>
+                            <button onclick="toggleTokenVisibility()" 
                                     class="text-blue-600 hover:text-blue-800 text-xs">
-                            👁️ Token anzeigen
-                  </button>
-                </div>
-                      </div>
-                    `;
-                  } else if (storageType === 'webdav') {
-                    return `
-                <div class="bg-green-50 p-3 rounded-lg">
-                        <div class="flex items-center gap-2 mb-2">
-                          <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                          </svg>
-                          <span class="font-medium text-green-900">WebDAV</span>
+                              👁️ Token anzeigen
+                    </button>
                   </div>
-                        <div class="text-green-700 font-mono break-all mb-2">URL: ${getStorageItem('WEBDAV_URL') || 'Nicht verfügbar'}</div>
-                        <div class="text-green-700 font-mono break-all mb-2">Benutzer: ${getStorageItem('WEBDAV_USERNAME') || 'Nicht verfügbar'}</div>
-                        <div class="text-green-700 font-mono break-all mb-2">Datei: ${getStorageItem('WEBDAV_FILENAME') || FILE_NAME}</div>
-                        <div class="flex space-x-2">
-                          <button onclick="copyToClipboard('${getStorageItem('WEBDAV_URL') || ''}')"
-                            class="text-green-600 hover:text-green-800 text-xs">
-                            📋 URL kopieren
+                        </div>
+                      `;
+                    } else if (storageType === 'webdav') {
+                      return `
+                  <div class="bg-green-50 p-3 rounded-lg">
+                          <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            <span class="font-medium text-green-900">WebDAV</span>
+                    </div>
+                          <div class="text-green-700 font-mono break-all mb-2">URL: ${localStorage.getItem('cf_log_webdav_url') || 'Nicht verfügbar'}</div>
+                          <div class="text-green-700 font-mono break-all mb-2">Benutzer: ${localStorage.getItem('cf_log_webdav_username') || 'Nicht verfügbar'}</div>
+                          <div class="text-green-700 font-mono break-all mb-2">Datei: ${localStorage.getItem('cf_log_webdav_filename') || FILE_NAME}</div>
+                          <div class="flex space-x-2">
+                            <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_url') || ''}')" 
+                              class="text-green-600 hover:text-green-800 text-xs">
+                              📋 URL kopieren
                       </button>
-                          <button onclick="copyToClipboard('${getStorageItem('WEBDAV_USERNAME') || ''}')"
-                            class="text-green-600 hover:text-green-800 text-xs">
-                            📋 Benutzer kopieren
+                            <button onclick="copyToClipboard('${localStorage.getItem('cf_log_webdav_username') || ''}')" 
+                              class="text-green-600 hover:text-green-800 text-xs">
+                              📋 Benutzer kopieren
                       </button>
                     </div>
                   </div>
-                    `;
-                  } else {
-                    return `
-                      <div class="bg-gray-50 p-3 rounded-lg">
-                        <div class="text-gray-700">Keine Speichermethode konfiguriert</div>
-                      </div>
-                    `;
-                  }
-                })()}
+                      `;
+                    } else {
+                      return `
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                          <div class="text-gray-700">Keine Speichermethode konfiguriert</div>
+                        </div>
+                      `;
+                    }
+                  })()}
                   <div class="bg-yellow-50 p-3 rounded-lg">
                     <div class="text-yellow-800 text-xs">
                       💡 <strong>Tipp:</strong> Speichere diese Daten sicher ab! Ohne sie kannst du dich nicht wieder einloggen.
@@ -2036,7 +1969,7 @@ function renderSettingsModal() {
                     <label class="relative inline-flex items-center cursor-pointer">
                       <input type="checkbox" id="pwa-hint-toggle" 
                              class="sr-only peer" 
-                             ${getStorageItem('PWA_HINT_ENABLED') !== 'false' ? 'checked' : ''}>
+                             ${localStorage.getItem('cf_log_pwa_hint_enabled') !== 'false' ? 'checked' : ''}>
                       <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
                     </label>
                   </div>
@@ -2132,90 +2065,75 @@ function renderImportModal() {
 
 // Modal Functions
 function showAddExerciseModal() {
-  showModal(MODAL_IDS.ADD_EXERCISE);
+  document.getElementById('add-exercise-modal').classList.remove('hidden');
   
   // Datalist mit aktuellen Übungen aktualisieren
   setTimeout(() => {
-    const datalist = document.getElementById(CONTAINER_IDS.EXERCISE_DATALIST);
+    const datalist = document.getElementById('exercise-datalist');
     if (datalist) {
       datalist.innerHTML = getAllAvailableExercises().map(ex => `<option value="${ex}">`).join('');
     }
     
     // Mobile-friendly autocomplete fix
-    setupMobileDropdown('exercise-name', CONTAINER_IDS.MOBILE_EXERCISE_DROPDOWN, CONTAINER_IDS.EXERCISE_DATALIST);
+    const exerciseInput = document.getElementById('exercise-name');
+    const mobileDropdown = document.getElementById('mobile-exercise-dropdown');
+    
+    if (exerciseInput && mobileDropdown) {
+      const exercises = getAllAvailableExercises();
+      
+      if (isMobileDevice()) {
+        // Mobile: Use custom dropdown, disable datalist
+        exerciseInput.removeAttribute('list');
+        
+        // Show mobile dropdown on focus
+        exerciseInput.addEventListener('focus', function() {
+          showMobileDropdown(exercises, exerciseInput, mobileDropdown);
+        });
+        
+        // Filter dropdown on input
+        exerciseInput.addEventListener('input', function() {
+          const value = this.value.toLowerCase();
+          const filtered = exercises.filter(ex => 
+            ex.toLowerCase().includes(value)
+          );
+          showMobileDropdown(filtered, exerciseInput, mobileDropdown);
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!exerciseInput.contains(e.target) && !mobileDropdown.contains(e.target)) {
+            mobileDropdown.classList.add('hidden');
+          }
+        });
+      } else {
+        // Desktop: Use native datalist
+        exerciseInput.setAttribute('list', 'exercise-datalist');
+        mobileDropdown.classList.add('hidden');
+      }
+    }
   }, 100);
 }
 
-// Universelle Modal-Management Funktionen
-function hideModal(modalId) {
-  document.getElementById(modalId).classList.add(CSS_CLASSES.HIDDEN);
-}
-
-function showModal(modalId) {
-  document.getElementById(modalId).classList.remove(CSS_CLASSES.HIDDEN);
-}
-
-// Universelle Mobile Dropdown Setup Funktion
-function setupMobileDropdown(inputId, dropdownId, datalistId) {
-  const input = document.getElementById(inputId);
-  const dropdown = document.getElementById(dropdownId);
-  
-  if (input && dropdown) {
-    const exercises = getAllAvailableExercises();
-    
-    if (isMobileDevice()) {
-      // Mobile: Use custom dropdown, disable datalist
-      input.removeAttribute('list');
-      
-      // Show mobile dropdown on focus
-      input.addEventListener('focus', function() {
-        showMobileDropdown(exercises, input, dropdown);
-      });
-      
-      // Filter dropdown on input
-      input.addEventListener('input', function() {
-        const value = this.value.toLowerCase();
-        const filtered = exercises.filter(ex => 
-          ex.toLowerCase().includes(value)
-        );
-        showMobileDropdown(filtered, input, dropdown);
-      });
-      
-      // Hide dropdown when clicking outside
-      document.addEventListener('click', function(e) {
-        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-          dropdown.classList.add('hidden');
-        }
-      });
-    } else {
-      // Desktop: Use native datalist
-      input.setAttribute('list', datalistId);
-      dropdown.classList.add('hidden');
-    }
-  }
-}
-
-// Legacy-Funktionen für Rückwärtskompatibilität
 function hideAddExerciseModal() {
-  hideModal(MODAL_IDS.ADD_EXERCISE);
+  document.getElementById('add-exercise-modal').classList.add('hidden');
 }
 
 function showSettingsModal() {
-  showModal(MODAL_IDS.SETTINGS);
+  document.getElementById('settings-modal').classList.remove('hidden');
   // Set "Allgemein" tab as active by default
   switchSettingsTab('general');
 }
 
 function hideSettingsModal() {
-  hideModal(MODAL_IDS.SETTINGS);
+  document.getElementById('settings-modal').classList.add('hidden');
 }
 
 function showImportModal() {
-  showModal(MODAL_IDS.IMPORT);
+  document.getElementById('import-modal').classList.remove('hidden');
 }
 
 function hideImportModal() {
-  hideModal(MODAL_IDS.IMPORT);
+  document.getElementById('import-modal').classList.add('hidden');
 }
 
 function showExerciseDetails(exerciseName) {
@@ -2507,7 +2425,42 @@ function showEditExerciseModal(exercise) {
   
   // Mobile-friendly autocomplete fix for edit modal
   setTimeout(() => {
-    setupMobileDropdown('edit-exercise-name', CONTAINER_IDS.MOBILE_EDIT_EXERCISE_DROPDOWN, CONTAINER_IDS.EDIT_EXERCISE_DATALIST);
+    const editExerciseInput = document.getElementById('edit-exercise-name');
+    const mobileEditDropdown = document.getElementById('mobile-edit-exercise-dropdown');
+    
+    if (editExerciseInput && mobileEditDropdown) {
+      const exercises = getAllAvailableExercises();
+      
+      if (isMobileDevice()) {
+        // Mobile: Use custom dropdown, disable datalist
+        editExerciseInput.removeAttribute('list');
+        
+        // Show mobile dropdown on focus
+        editExerciseInput.addEventListener('focus', function() {
+          showMobileDropdown(exercises, editExerciseInput, mobileEditDropdown);
+        });
+        
+        // Filter dropdown on input
+        editExerciseInput.addEventListener('input', function() {
+          const value = this.value.toLowerCase();
+          const filtered = exercises.filter(ex => 
+            ex.toLowerCase().includes(value)
+          );
+          showMobileDropdown(filtered, editExerciseInput, mobileEditDropdown);
+        });
+        
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!editExerciseInput.contains(e.target) && !mobileEditDropdown.contains(e.target)) {
+            mobileEditDropdown.classList.add('hidden');
+          }
+        });
+      } else {
+        // Desktop: Use native datalist
+        editExerciseInput.setAttribute('list', 'edit-exercise-datalist');
+        mobileEditDropdown.classList.add('hidden');
+      }
+    }
   }, 100);
   
   // Event Listener für das Formular
@@ -2605,11 +2558,95 @@ function hideEditExerciseModal() {
   }
 }
 
+function addEditSet() {
+  const container = document.getElementById('edit-sets-container');
+  if (!container) {
+    console.error('Edit-Sets-Container nicht gefunden');
+    return;
+  }
+  
+  const existingSets = container.querySelectorAll('.edit-set-row');
+  const setNumber = existingSets.length + 1;
+  
+  // Werte des letzten Sets holen (falls vorhanden)
+  let lastReps = '';
+  let lastWeight = '';
+  let lastNotes = '';
+  
+  if (existingSets.length > 0) {
+    const lastSet = existingSets[existingSets.length - 1];
+    const inputs = lastSet.querySelectorAll('input');
+    if (inputs.length >= 3) {
+      lastReps = inputs[0].value;
+      lastWeight = inputs[1].value;
+      lastNotes = inputs[2].value;
+    }
+  }
+  
+  // Divider hinzufügen (außer beim ersten Set)
+  if (existingSets.length > 0) {
+    const dividerDiv = document.createElement('div');
+    dividerDiv.className = 'set-divider h-px bg-gray-300 my-2';
+    container.appendChild(dividerDiv);
+  }
+  
+  const setDiv = document.createElement('div');
+  setDiv.className = 'edit-set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
+  setDiv.innerHTML = `
+    <div class="text-sm font-medium text-gray-600 text-center">${setNumber}</div>
+    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
+    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
+    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
+    <button type="button" onclick="removeEditSet(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
+  `;
+  container.appendChild(setDiv);
+  
+  // Set-Nummern aktualisieren
+  updateEditSetNumbers();
+}
 
+function removeEditSet(button) {
+  const setRow = button.parentElement;
+  const container = document.getElementById('edit-sets-container');
+  
+  if (!setRow || !container) {
+    console.error('Edit-Set-Row oder Container nicht gefunden');
+    return;
+  }
+  
+  // Highlight the set before removing it
+  highlightDeletedSet(setRow);
+  
+  // Remove the set after a short delay to show the animation
+  setTimeout(() => {
+    setRow.remove();
+    
+    // Entferne Divider, die nicht mehr benötigt werden
+    const dividers = container.querySelectorAll('.set-divider');
+    dividers.forEach((divider, index) => {
+      // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
+      const nextElement = divider.nextElementSibling;
+      if (!nextElement || !nextElement.classList.contains('edit-set-row')) {
+        divider.remove();
+      }
+    });
+    
+    updateEditSetNumbers();
+  }, 300); // Wait for animation to complete
+}
 
-
-
-
+function updateEditSetNumbers() {
+  const container = document.getElementById('edit-sets-container');
+  if (!container) return;
+  
+  const setRows = container.querySelectorAll('.edit-set-row');
+  setRows.forEach((row, index) => {
+    const numberDiv = row.querySelector('div');
+    if (numberDiv) {
+      numberDiv.textContent = index + 1;
+    }
+  });
+}
 
 function showTrainingContextMenu(exerciseId, event) {
   event.stopPropagation();
@@ -2785,7 +2822,7 @@ function copyToClipboard(text) {
 }
 
 function toggleTokenVisibility() {
-  const token = getStorageItem('TOKEN');
+  const token = localStorage.getItem('cf_log_token');
   if (!token) {
     showNotification('Kein Token verfügbar!', 'error');
     return;
@@ -2920,11 +2957,96 @@ function setupModalEventListeners() {
   }
 }
 
+// Utility Functions
+function addSet() {
+  const container = document.getElementById('sets-container');
+  if (!container) {
+    console.error('Sets-Container nicht gefunden');
+    return;
+  }
+  
+  const existingSets = container.querySelectorAll('.set-row');
+  const setNumber = existingSets.length + 1;
+  
+  // Werte des letzten Sets holen (falls vorhanden)
+  let lastReps = '';
+  let lastWeight = '';
+  let lastNotes = '';
+  
+  if (existingSets.length > 0) {
+    const lastSet = existingSets[existingSets.length - 1];
+    const inputs = lastSet.querySelectorAll('input');
+    if (inputs.length >= 3) {
+      lastReps = inputs[0].value;
+      lastWeight = inputs[1].value;
+      lastNotes = inputs[2].value;
+    }
+  }
+  
+  // Divider hinzufügen (außer beim ersten Set)
+  if (existingSets.length > 0) {
+    const dividerDiv = document.createElement('div');
+    dividerDiv.className = 'set-divider h-px bg-gray-300 my-2';
+    container.appendChild(dividerDiv);
+  }
+  
+  const setDiv = document.createElement('div');
+  setDiv.className = 'set-row grid grid-cols-1 sm:grid-cols-5 gap-2 items-center';
+  setDiv.innerHTML = `
+    <div class="text-sm font-medium text-gray-600 text-center">${setNumber}</div>
+    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
+    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
+    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
+    <button type="button" onclick="removeSet(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
+  `;
+  container.appendChild(setDiv);
+  
+  // Set-Nummern aktualisieren
+  updateSetNumbers();
+}
 
+function updateSetNumbers() {
+  const container = document.getElementById('sets-container');
+  if (!container) return;
+  
+  const setRows = container.querySelectorAll('.set-row');
+  setRows.forEach((row, index) => {
+    const numberDiv = row.querySelector('div');
+    if (numberDiv) {
+      numberDiv.textContent = index + 1;
+    }
+  });
+}
 
-
-
-
+function removeSet(button) {
+  const setRow = button.parentElement;
+  const container = document.getElementById('sets-container');
+  
+  if (!setRow || !container) {
+    console.error('Set-Row oder Container nicht gefunden');
+    return;
+  }
+  
+  // Highlight the set before removing it
+  highlightDeletedSet(setRow);
+  
+  // Remove the set after a short delay to show the animation
+  setTimeout(() => {
+    setRow.remove();
+    
+    // Entferne Divider, die nicht mehr benötigt werden
+    const dividers = container.querySelectorAll('.set-divider');
+    dividers.forEach((divider, index) => {
+      // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
+      const nextElement = divider.nextElementSibling;
+      if (!nextElement || !nextElement.classList.contains('set-row')) {
+        divider.remove();
+      }
+    });
+    
+    updateSetNumbers();
+  }, 300); // Wait for animation to complete
+}
 
 function editExercise(id) {
   const exercise = appData.exercises.find(e => e.id === id);
@@ -2956,7 +3078,7 @@ function saveSettings() {
   // Save PWA hint toggle setting
   const pwaHintToggle = document.getElementById('pwa-hint-toggle');
   if (pwaHintToggle) {
-    setStorageItem('PWA_HINT_ENABLED', pwaHintToggle.checked.toString());
+    localStorage.setItem('cf_log_pwa_hint_enabled', pwaHintToggle.checked.toString());
   }
   
   appData.settings.defaultExercises = defaultExercises;
@@ -3234,14 +3356,14 @@ function showNotification(message, type = 'info') {
 }
 
 function logout() {
-  const storageType = getStorageItem('STORAGE_TYPE');
-  const demoMode = getStorageItem('DEMO_MODE');
+  const storageType = localStorage.getItem('cf_log_storage_type');
+  const demoMode = localStorage.getItem('cf_log_demo_mode');
   
   if (demoMode === 'true') {
     // Demo-Modus beenden
     if (confirm('Demo-Modus beenden?')) {
-      removeStorageItem('DEMO_MODE');
-      removeStorageItem('USER_NAME');
+      localStorage.removeItem('cf_log_demo_mode');
+      localStorage.removeItem('cf_log_user_name');
       window.location.reload();
     }
     return;
@@ -3252,14 +3374,14 @@ function logout() {
   message += 'Speichere dir deine Login-Daten:\n';
   
   if (storageType === 'github') {
-    const token = getStorageItem('TOKEN');
-    const gistId = getStorageItem('GIST_ID');
+    const token = localStorage.getItem('cf_log_token');
+    const gistId = localStorage.getItem('cf_log_gist_id');
     message += `• Gist-ID: ${gistId}\n`;
     message += `• GitHub Token: ${token ? token.substring(0, 8) + '...' : 'Nicht verfügbar'}\n`;
   } else if (storageType === 'webdav') {
-    const url = getStorageItem('WEBDAV_URL');
-    const username = getStorageItem('WEBDAV_USERNAME');
-    const filename = getStorageItem('WEBDAV_FILENAME');
+    const url = localStorage.getItem('cf_log_webdav_url');
+    const username = localStorage.getItem('cf_log_webdav_username');
+    const filename = localStorage.getItem('cf_log_webdav_filename');
     message += `• WebDAV URL: ${url}\n`;
     message += `• Benutzername: ${username}\n`;
     message += `• Dateiname: ${filename}\n`;
@@ -3267,24 +3389,24 @@ function logout() {
   
   message += '\nOhne diese Daten kannst du dich nicht wieder einloggen!';
   
-      if (confirm(message)) {
-      // Alle Storage-spezifischen Daten löschen
-      removeStorageItem('STORAGE_TYPE');
-      removeStorageItem('TOKEN');
-      removeStorageItem('GIST_ID');
-      removeStorageItem('WEBDAV_URL');
-      removeStorageItem('WEBDAV_USERNAME');
-      removeStorageItem('WEBDAV_PASSWORD');
-      removeStorageItem('WEBDAV_FILENAME');
-      removeStorageItem('USER_NAME');
-      window.location.reload();
-    }
+  if (confirm(message)) {
+    // Alle Storage-spezifischen Daten löschen
+    localStorage.removeItem('cf_log_storage_type');
+    localStorage.removeItem('cf_log_token');
+    localStorage.removeItem('cf_log_gist_id');
+    localStorage.removeItem('cf_log_webdav_url');
+    localStorage.removeItem('cf_log_webdav_username');
+    localStorage.removeItem('cf_log_webdav_password');
+    localStorage.removeItem('cf_log_webdav_filename');
+    localStorage.removeItem('cf_log_user_name');
+    window.location.reload();
+  }
 }
 
 // Main function
 async function main() {
-  const storageType = getStorageItem('STORAGE_TYPE') || 'github';
-  const demoMode = getStorageItem('DEMO_MODE');
+  const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
+  const demoMode = localStorage.getItem('cf_log_demo_mode');
   
   // Demo-Modus prüfen
   if (demoMode === 'true') {
@@ -3294,22 +3416,22 @@ async function main() {
   }
   
   // Storage Provider initialisieren
-      try {
-      if (storageType === 'github') {
-        const token = getStorageItem('TOKEN');
-        const gistId = getStorageItem('GIST_ID');
+  try {
+    if (storageType === 'github') {
+      const token = localStorage.getItem('cf_log_token');
+      const gistId = localStorage.getItem('cf_log_gist_id');
   
   if (!token || !gistId) {
     renderOnboarding();
     return;
   }
   
-        currentStorageProvider = new GitHubGistProvider(token, gistId);
-      } else if (storageType === 'webdav') {
-        const url = getStorageItem('WEBDAV_URL');
-        const username = getStorageItem('WEBDAV_USERNAME');
-        const password = getStorageItem('WEBDAV_PASSWORD');
-        const filename = getStorageItem('WEBDAV_FILENAME') || FILE_NAME;
+      currentStorageProvider = new GitHubGistProvider(token, gistId);
+    } else if (storageType === 'webdav') {
+      const url = localStorage.getItem('cf_log_webdav_url');
+      const username = localStorage.getItem('cf_log_webdav_username');
+      const password = localStorage.getItem('cf_log_webdav_password');
+      const filename = localStorage.getItem('cf_log_webdav_filename') || FILE_NAME;
       
       if (!url || !username || !password) {
         renderOnboarding();
@@ -3337,127 +3459,16 @@ async function main() {
 // Initialize app
 main();
 
-
-
-// Universelle Set-Management Funktionen
-function addSet(containerId = CONTAINER_IDS.SETS, isEdit = false) {
-  const container = document.getElementById(containerId);
-  if (!container) {
-    console.error(`${containerId} nicht gefunden`);
-    return;
-  }
-  
-  const rowClass = isEdit ? CSS_CLASSES.EDIT_SET_ROW : CSS_CLASSES.SET_ROW;
-  const removeFunction = isEdit ? 'removeEditSet' : 'removeSet';
-  const updateFunction = isEdit ? 'updateEditSetNumbers' : 'updateSetNumbers';
-  
-  const existingSets = container.querySelectorAll(`.${rowClass}`);
-  const setNumber = existingSets.length + 1;
-  
-  // Werte des letzten Sets holen (falls vorhanden)
-  let lastReps = '';
-  let lastWeight = '';
-  let lastNotes = '';
-  
-  if (existingSets.length > 0) {
-    const lastSet = existingSets[existingSets.length - 1];
-    const inputs = lastSet.querySelectorAll('input');
-    if (inputs.length >= 3) {
-      lastReps = inputs[0].value;
-      lastWeight = inputs[1].value;
-      lastNotes = inputs[2].value;
-    }
-  }
-  
-  // Divider hinzufügen (außer beim ersten Set)
-  if (existingSets.length > 0) {
-    const dividerDiv = document.createElement('div');
-    dividerDiv.className = `${CSS_CLASSES.SET_DIVIDER} h-px bg-gray-300 my-2`;
-    container.appendChild(dividerDiv);
-  }
-  
-  const setDiv = document.createElement('div');
-  setDiv.className = `${rowClass} grid grid-cols-1 sm:grid-cols-5 gap-2 items-center`;
-  setDiv.innerHTML = `
-    <div class="text-sm font-medium text-gray-600 text-center">${setNumber}</div>
-    <input type="number" min="1" placeholder="Wdh." class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastReps}">
-    <input type="number" min="0" step="0.1" placeholder="kg" class="border border-gray-300 rounded-lg px-3 py-2" required value="${lastWeight}">
-    <input type="text" placeholder="Notizen" class="border border-gray-300 rounded-lg px-3 py-2" value="${lastNotes}">
-    <button type="button" onclick="${removeFunction}(this)" class="text-red-600 hover:text-red-800 px-2 py-2 rounded-lg hover:bg-red-50">×</button>
-  `;
-  container.appendChild(setDiv);
-  
-  // Set-Nummern aktualisieren
-  window[updateFunction]();
-}
-
-function removeSet(button, containerId = CONTAINER_IDS.SETS, isEdit = false) {
-  const setRow = button.parentElement;
-  const container = document.getElementById(containerId);
-  const rowClass = isEdit ? CSS_CLASSES.EDIT_SET_ROW : CSS_CLASSES.SET_ROW;
-  const updateFunction = isEdit ? 'updateEditSetNumbers' : 'updateSetNumbers';
-  
-  if (!setRow || !container) {
-    console.error(`${isEdit ? 'Edit-' : ''}Set-Row oder Container nicht gefunden`);
-    return;
-  }
-  
-  // Highlight the set before removing it
-  highlightDeletedSet(setRow);
-  
-  // Remove the set after a short delay to show the animation
-  setTimeout(() => {
-    setRow.remove();
-    
-    // Entferne Divider, die nicht mehr benötigt werden
-    const dividers = container.querySelectorAll(`.${CSS_CLASSES.SET_DIVIDER}`);
-    dividers.forEach((divider, index) => {
-      // Entferne Divider, wenn sie nicht mehr zwischen Sets stehen
-      const nextElement = divider.nextElementSibling;
-      if (!nextElement || !nextElement.classList.contains(rowClass)) {
-        divider.remove();
-      }
-    });
-    
-    window[updateFunction]();
-  }, 300); // Wait for animation to complete
-}
-
-function updateSetNumbers(containerId = CONTAINER_IDS.SETS, isEdit = false) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-  
-  const rowClass = isEdit ? CSS_CLASSES.EDIT_SET_ROW : CSS_CLASSES.SET_ROW;
-  const setRows = container.querySelectorAll(`.${rowClass}`);
-  setRows.forEach((row, index) => {
-    const numberDiv = row.querySelector('div');
-    if (numberDiv) {
-      numberDiv.textContent = index + 1;
-    }
-  });
-}
-
-function addMultipleSets(count, isEdit = false) {
+function addMultipleSets(count) {
   for (let i = 0; i < count; i++) {
-    addSet(isEdit ? CONTAINER_IDS.EDIT_SETS : CONTAINER_IDS.SETS, isEdit);
+    addSet();
   }
-}
-
-// Legacy-Funktionen für Rückwärtskompatibilität
-function addEditSet() {
-  addSet(CONTAINER_IDS.EDIT_SETS, true);
-}
-
-function removeEditSet(button) {
-  removeSet(button, CONTAINER_IDS.EDIT_SETS, true);
-}
-
-function updateEditSetNumbers() {
-  updateSetNumbers(CONTAINER_IDS.EDIT_SETS, true);
 }
 
 function addMultipleEditSets(count) {
-  addMultipleSets(count, true);
+  for (let i = 0; i < count; i++) {
+    addEditSet();
+  }
 }
 
 
