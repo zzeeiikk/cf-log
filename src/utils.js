@@ -154,9 +154,9 @@ function getDefaultView() {
         // Normale Darstellung für gemischte Wiederholungen
         return groupedSets.map(group => {
           if (group.count === 1) {
-            return `${group.reps}×${group.weight}kg`;
+            return `${group.reps} (${group.weight}kg)`;
           } else {
-            return `${group.count}×${group.reps}×${group.weight}kg`;
+            return `${group.count}×${group.reps} (${group.weight}kg)`;
           }
         }).join(' ');
       }
