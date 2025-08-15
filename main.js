@@ -2072,42 +2072,7 @@ function showAddExerciseModal() {
     }
     
     // Mobile-friendly autocomplete fix
-    const exerciseInput = document.getElementById('exercise-name');
-    const mobileDropdown = document.getElementById('mobile-exercise-dropdown');
-    
-    if (exerciseInput && mobileDropdown) {
-      const exercises = getAllAvailableExercises();
-      
-      if (isMobileDevice()) {
-        // Mobile: Use custom dropdown, disable datalist
-        exerciseInput.removeAttribute('list');
-        
-        // Show mobile dropdown on focus
-        exerciseInput.addEventListener('focus', function() {
-          showMobileDropdown(exercises, exerciseInput, mobileDropdown);
-        });
-        
-        // Filter dropdown on input
-        exerciseInput.addEventListener('input', function() {
-          const value = this.value.toLowerCase();
-          const filtered = exercises.filter(ex => 
-            ex.toLowerCase().includes(value)
-          );
-          showMobileDropdown(filtered, exerciseInput, mobileDropdown);
-        });
-        
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!exerciseInput.contains(e.target) && !mobileDropdown.contains(e.target)) {
-            mobileDropdown.classList.add('hidden');
-          }
-        });
-      } else {
-        // Desktop: Use native datalist
-        exerciseInput.setAttribute('list', 'exercise-datalist');
-        mobileDropdown.classList.add('hidden');
-      }
-    }
+    setupMobileDropdown('exercise-name', 'mobile-exercise-dropdown', 'exercise-datalist');
   }, 100);
 }
 
@@ -2440,42 +2405,7 @@ function showEditExerciseModal(exercise) {
   
   // Mobile-friendly autocomplete fix for edit modal
   setTimeout(() => {
-    const editExerciseInput = document.getElementById('edit-exercise-name');
-    const mobileEditDropdown = document.getElementById('mobile-edit-exercise-dropdown');
-    
-    if (editExerciseInput && mobileEditDropdown) {
-      const exercises = getAllAvailableExercises();
-      
-      if (isMobileDevice()) {
-        // Mobile: Use custom dropdown, disable datalist
-        editExerciseInput.removeAttribute('list');
-        
-        // Show mobile dropdown on focus
-        editExerciseInput.addEventListener('focus', function() {
-          showMobileDropdown(exercises, editExerciseInput, mobileEditDropdown);
-        });
-        
-        // Filter dropdown on input
-        editExerciseInput.addEventListener('input', function() {
-          const value = this.value.toLowerCase();
-          const filtered = exercises.filter(ex => 
-            ex.toLowerCase().includes(value)
-          );
-          showMobileDropdown(filtered, editExerciseInput, mobileEditDropdown);
-        });
-        
-        // Hide dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!editExerciseInput.contains(e.target) && !mobileEditDropdown.contains(e.target)) {
-            mobileEditDropdown.classList.add('hidden');
-          }
-        });
-      } else {
-        // Desktop: Use native datalist
-        editExerciseInput.setAttribute('list', 'edit-exercise-datalist');
-        mobileEditDropdown.classList.add('hidden');
-      }
-    }
+    setupMobileDropdown('edit-exercise-name', 'mobile-edit-exercise-dropdown', 'edit-exercise-datalist');
   }, 100);
   
   // Event Listener für das Formular
@@ -3474,6 +3404,51 @@ function addMultipleSets(count) {
 function addMultipleEditSets(count) {
   for (let i = 0; i < count; i++) {
     addEditSet();
+  }
+}
+
+// Universelle Mobile Dropdown Setup Funktion
+function setupMobileDropdown(inputId, dropdownId, datalistId = null) {
+  const input = document.getElementById(inputId);
+  const dropdown = document.getElementById(dropdownId);
+  
+  if (!input || !dropdown) {
+    console.warn(`Mobile Dropdown Setup fehlgeschlagen: ${inputId} oder ${dropdownId} nicht gefunden`);
+    return;
+  }
+  
+  const exercises = getAllAvailableExercises();
+  
+  if (isMobileDevice()) {
+    // Mobile: Use custom dropdown, disable datalist
+    input.removeAttribute('list');
+    
+    // Show mobile dropdown on focus
+    input.addEventListener('focus', function() {
+      showMobileDropdown(exercises, input, dropdown);
+    });
+    
+    // Filter dropdown on input
+    input.addEventListener('input', function() {
+      const value = this.value.toLowerCase();
+      const filtered = exercises.filter(ex => 
+        ex.toLowerCase().includes(value)
+      );
+      showMobileDropdown(filtered, input, dropdown);
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+  } else {
+    // Desktop: Use native datalist
+    if (datalistId) {
+      input.setAttribute('list', datalistId);
+    }
+    dropdown.classList.add('hidden');
   }
 }
 
