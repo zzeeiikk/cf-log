@@ -277,10 +277,7 @@ function showPWAInstallGuide() {
 
 // Hide PWA installation guide
 function hidePWAInstallGuide() {
-  const modal = document.getElementById('pwa-install-guide-modal');
-  if (modal) {
-    modal.remove();
-  }
+  hideModal('pwa-install-guide-modal', true);
 }
 
 // Show mobile dropdown for exercise selection
@@ -2114,26 +2111,47 @@ function showAddExerciseModal() {
   }, 100);
 }
 
+// Universelle Modal-Funktionen
+function showModal(modalId, callback = null) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('hidden');
+    if (callback && typeof callback === 'function') {
+      callback();
+    }
+  }
+}
+
+function hideModal(modalId, removeFromDOM = false) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    if (removeFromDOM) {
+      modal.remove();
+    } else {
+      modal.classList.add('hidden');
+    }
+  }
+}
+
+// Legacy-Funktionen für Rückwärtskompatibilität
 function hideAddExerciseModal() {
-  document.getElementById('add-exercise-modal').classList.add('hidden');
+  hideModal('add-exercise-modal');
 }
 
 function showSettingsModal() {
-  document.getElementById('settings-modal').classList.remove('hidden');
-  // Set "Allgemein" tab as active by default
-  switchSettingsTab('general');
+  showModal('settings-modal', () => switchSettingsTab('general'));
 }
 
 function hideSettingsModal() {
-  document.getElementById('settings-modal').classList.add('hidden');
+  hideModal('settings-modal');
 }
 
 function showImportModal() {
-  document.getElementById('import-modal').classList.remove('hidden');
+  showModal('import-modal');
 }
 
 function hideImportModal() {
-  document.getElementById('import-modal').classList.add('hidden');
+  hideModal('import-modal');
 }
 
 function showExerciseDetails(exerciseName) {
@@ -2238,10 +2256,7 @@ function showExerciseDetails(exerciseName) {
 }
 
 function hideExerciseDetails() {
-  const modal = document.getElementById('exercise-details-modal');
-  if (modal) {
-    modal.remove();
-  }
+  hideModal('exercise-details-modal', true);
 }
 
 // Update exercise details modal if it's open
@@ -2552,10 +2567,7 @@ function showEditExerciseModal(exercise) {
 }
 
 function hideEditExerciseModal() {
-  const modal = document.getElementById('edit-exercise-modal');
-  if (modal) {
-    modal.remove();
-  }
+  hideModal('edit-exercise-modal', true);
 }
 
 function addEditSet() {
@@ -2791,10 +2803,7 @@ function showTrainingDetails(exerciseId) {
 }
 
 function hideTrainingDetails() {
-  const modal = document.getElementById('training-details-modal');
-  if (modal) {
-    modal.remove();
-  }
+  hideModal('training-details-modal', true);
 }
 
 function copyToClipboard(text) {
@@ -2873,10 +2882,7 @@ function toggleTokenVisibility() {
 }
 
 function hideTokenModal() {
-  const modal = document.getElementById('token-modal');
-  if (modal) {
-    modal.remove();
-  }
+  hideModal('token-modal', true);
 }
 
 function setupModalEventListeners() {
