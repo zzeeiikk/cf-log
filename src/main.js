@@ -47,6 +47,14 @@ async function loadAllModules() {
     // Cloud-Konfiguration dynamisch laden
     await loadCloudConfig();
     
+    // EmailJS Konfiguration laden (falls vorhanden)
+    try {
+      await loadModule('emailjs-config.js');
+      console.log('EmailJS Konfiguration geladen');
+    } catch (error) {
+      console.log('EmailJS Konfiguration nicht verfügbar');
+    }
+    
     // Initialize app after all modules are loaded
     main();
   } catch (error) {

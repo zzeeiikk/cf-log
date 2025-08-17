@@ -6,6 +6,7 @@ logo*
 
 # Sensible Konfigurationsdateien
 src/cloud-config.js
+src/emailjs-config.js
 .env
 .env.local
 .env.production

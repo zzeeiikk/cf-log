@@ -2976,39 +2976,6 @@ function renderOnboarding() {
     });
   }
 
-  // E-Mail über EmailJS senden
-  async function sendBetaSignupEmail(email) {
-    // EmailJS laden falls noch nicht geladen
-    if (typeof emailjs === 'undefined') {
-      await loadEmailJS();
-    }
-    
-    // E-Mail an dich senden - einfache Version
-    const templateParams = {
-      email: email
-    };
-    
-    return emailjs.send(
-      window.EMAILJS_CONFIG.serviceId,
-      window.EMAILJS_CONFIG.templateId,
-      templateParams
-    );
-  }
-  
-  // EmailJS dynamisch laden
-  async function loadEmailJS() {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
-      script.onload = () => {
-        emailjs.init(window.EMAILJS_CONFIG.publicKey);
-        resolve();
-      };
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  }
-
   // Cloud-Beta Anmeldung anzeigen
   function showCloudBetaSignup() {
     // Modal HTML erstellen
