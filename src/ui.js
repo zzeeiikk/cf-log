@@ -180,14 +180,14 @@ function renderOnboarding() {
           </div>
           <div class="my-8 border-t border-neutral-400"></div>
           <!-- Demo Button -->
-          <div class="mt-6 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
             <div class="flex items-center justify-between">
               <div>
-                <h4 class="font-medium text-neutral-900">App testen</h4>
-                <p class="text-sm text-neutral-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
+                <h4 class="font-medium text-purple-900">App testen</h4>
+                <p class="text-sm text-purple-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
               </div>
               <button type="button" id="demo-btn" 
-                      class="bg-neutral-500 hover:bg-neutral-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                      class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 Demo starten
               </button>
             </div>
@@ -267,6 +267,7 @@ function renderOnboarding() {
       }
     };
   
+<<<<<<< Updated upstream
     // Cloud Form Toggle
     document.getElementById('toggle-cloud-form').onclick = () => {
       const loginForm = document.getElementById('cloud-login-form');
@@ -395,6 +396,8 @@ function renderOnboarding() {
       }
     };
     
+=======
+>>>>>>> Stashed changes
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const gistId = e.target.gist_id.value.trim();
@@ -506,11 +509,6 @@ function renderOnboarding() {
                 <span class="ml-3 text-sm text-gray-500">Hallo, ${userName}</span>
               </div>
               <div class="flex items-center space-x-4">
-                <!-- Auth Button für Cloud-Version -->
-                <div id="auth-button" class="mr-2">
-                  <!-- Wird automatisch von Auth UI gefüllt -->
-                </div>
-                
                 <button onclick="showAddExerciseModal()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white ${currentView === 'training' ? 'px-4 py-2' : 'px-3 py-1'} text-sm rounded-md font-medium transition-colors">
                   ${currentView === 'training' ? '+' : '+ Training'}
@@ -2734,7 +2732,7 @@ function renderOnboarding() {
     }, 3000);
   }
   
-  async function logout() {
+  function logout() {
     const storageType = localStorage.getItem('cf_log_storage_type');
     const demoMode = localStorage.getItem('cf_log_demo_mode');
     
@@ -2744,32 +2742,6 @@ function renderOnboarding() {
         localStorage.removeItem('cf_log_demo_mode');
         localStorage.removeItem('cf_log_user_name');
         window.location.reload();
-      }
-      return;
-    }
-    
-    // Cloud-Logout behandeln
-    if (storageType === 'cloud') {
-      if (confirm('Möchtest du dich wirklich abmelden?')) {
-        try {
-          // Supabase Logout
-          if (window.supabaseClient) {
-            await window.supabaseClient.signOut();
-          }
-          
-          // Cloud-Daten löschen
-          localStorage.removeItem('cf_log_storage_type');
-          localStorage.removeItem('cf_log_user_name');
-          
-          // Zurück zur Onboarding-Seite
-          window.location.reload();
-        } catch (error) {
-          console.error('Fehler beim Logout:', error);
-          // Trotzdem zurücksetzen
-          localStorage.removeItem('cf_log_storage_type');
-          localStorage.removeItem('cf_log_user_name');
-          window.location.reload();
-        }
       }
       return;
     }
@@ -2952,6 +2924,7 @@ function renderOnboarding() {
 
   // Main function
   async function main() {
+    const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
     const demoMode = localStorage.getItem('cf_log_demo_mode');
     
     // Demo-Modus prüfen
@@ -2961,22 +2934,13 @@ function renderOnboarding() {
       return;
     }
     
-    // Cloud-Modus initialisieren (falls verfügbar)
-    await initCloudMode();
-    
-    // Storage Type nach Cloud-Initialisierung prüfen
-    const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
-    
     // Storage Provider initialisieren
     try {
-      console.log('Storage Type:', storageType);
-      
       if (storageType === 'github') {
         const token = localStorage.getItem('cf_log_token');
         const gistId = localStorage.getItem('cf_log_gist_id');
     
     if (!token || !gistId) {
-      console.log('GitHub Token oder Gist ID fehlt, zeige Onboarding');
       renderOnboarding();
       return;
     }
@@ -2989,40 +2953,23 @@ function renderOnboarding() {
         const filename = localStorage.getItem('cf_log_webdav_filename') || FILE_NAME;
         
         if (!url || !username || !password) {
-          console.log('WebDAV Daten fehlen, zeige Onboarding');
           renderOnboarding();
           return;
         }
         
         currentStorageProvider = new WebDAVProvider(url, username, password, filename);
-      } else if (storageType === 'cloud') {
-        console.log('Cloud-Storage wird verwendet');
-        // Cloud-Storage verwenden
-        if (window.cloudStorage && window.cloudStorage.isCloudMode) {
-          console.log('Cloud Storage ist verfügbar und aktiv');
-          currentStorageProvider = window.cloudStorage;
-        } else {
-          console.log('Cloud Storage nicht verfügbar, zeige Onboarding');
-          renderOnboarding();
-          return;
-        }
       } else {
-        console.log('Unbekannter Storage Type, zeige Onboarding');
         renderOnboarding();
         return;
       }
       
-      console.log('Daten werden geladen...');
       // Daten laden
       const data = await currentStorageProvider.load();
-      console.log('Daten geladen:', data);
       appData = { ...appData, ...data };
-      console.log('Dashboard wird gerendert...');
       renderDashboard();
       // Show PWA install prompt after successful login
       showInstallPromptAfterLogin();
     } catch (err) {
-      console.error('Fehler beim Laden:', err);
       showNotification('Fehler beim Laden: ' + err.message, 'error');
       logout();
     }
