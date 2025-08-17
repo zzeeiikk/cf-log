@@ -156,18 +156,41 @@ class AuthUI {
       // User Profile laden
       const profile = await window.supabaseClient.getUserProfile(this.currentUser.id);
       if (profile) {
-        // Profile in App-State setzen
+        // Profile in App-State setzen (falls die Funktion existiert)
         if (window.setUserProfile) {
           window.setUserProfile(profile);
+        } else {
+          // Fallback: Profile direkt setzen
+          if (window.appData) {
+            window.appData.user = {
+              name: profile.name,
+              created: profile.created_at
+            };
+          }
         }
       }
       
       // Trainingsdaten laden
       const trainingData = await window.supabaseClient.getTrainingData(this.currentUser.id);
       if (trainingData) {
-        // Trainingsdaten in App-State setzen
+        // Trainingsdaten in App-State setzen (falls die Funktion existiert)
         if (window.loadTrainingData) {
-          window.loadTrainingData(trainingData);
+          // Stelle sicher, dass die Daten die richtige Struktur haben
+          const formattedData = {
+            user: {
+              name: profile?.name || 'Benutzer',
+              created: profile?.created_at || new Date().toISOString()
+            },
+            exercises: trainingData.exercises || [],
+            settings: trainingData.settings || {}
+          };
+          window.loadTrainingData(formattedData);
+        } else {
+          // Fallback: Daten direkt setzen
+          if (window.appData) {
+            window.appData.exercises = trainingData.exercises || [];
+            window.appData.settings = trainingData.settings || {};
+          }
         }
       }
       
