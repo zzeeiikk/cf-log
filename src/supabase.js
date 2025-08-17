@@ -30,7 +30,10 @@ class SupabaseClient {
     
     const { data, error } = await this.client.auth.signUp({
       email,
-      password
+      password,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
     });
     
     if (error) throw error;

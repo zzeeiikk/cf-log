@@ -104,37 +104,64 @@ class AuthUI {
 
   // Login
   async login(email, password) {
-    const { data, error } = await window.supabaseClient.signIn(email, password);
-    if (error) throw error;
-    
-    this.currentUser = data.user;
-    this.isAuthenticated = true;
-    
-    this.closeAuthModal();
-    this.updateUI();
-    this.loadUserData();
+    try {
+      const { data, error } = await window.supabaseClient.signIn(email, password);
+      if (error) throw error;
+      
+      console.log('Login Response:', data);
+      
+      if (data && data.user) {
+        this.currentUser = data.user;
+        this.isAuthenticated = true;
+        
+        this.closeAuthModal();
+        this.updateUI();
+        await this.loadUserData();
+      } else {
+        throw new Error('Login fehlgeschlagen: Keine User-Daten erhalten');
+      }
+    } catch (error) {
+      console.error('Login Error:', error);
+      throw error;
+    }
   }
 
   // Register
   async register(email, password, name) {
-    const { data, error } = await window.supabaseClient.signUp(email, password);
-    if (error) throw error;
-    
-    // User Profile erstellen
-    if (data.user) {
-      await window.supabaseClient.saveUserProfile(data.user.id, {
-        name: name,
-        created: new Date().toISOString(),
-        settings: {}
-      });
+    try {
+      const { data, error } = await window.supabaseClient.signUp(email, password);
+      if (error) throw error;
+      
+      console.log('Register Response:', data);
+      
+      if (data && data.user) {
+        // Prüfen ob Email-Bestätigung erforderlich ist
+        if (data.user.email_confirmed_at === null) {
+          this.showSuccess('Registrierung erfolgreich! Bitte bestätige deine E-Mail-Adresse, bevor du dich anmeldest.');
+          this.closeAuthModal();
+          return;
+        }
+        
+        // User Profile erstellen
+        await window.supabaseClient.saveUserProfile(data.user.id, {
+          name: name,
+          created: new Date().toISOString(),
+          settings: {}
+        });
+        
+        this.currentUser = data.user;
+        this.isAuthenticated = true;
+        
+        this.closeAuthModal();
+        this.updateUI();
+        await this.loadUserData();
+      } else {
+        throw new Error('Registrierung fehlgeschlagen: Keine User-Daten erhalten');
+      }
+    } catch (error) {
+      console.error('Register Error:', error);
+      throw error;
     }
-    
-    this.currentUser = data.user;
-    this.isAuthenticated = true;
-    
-    this.closeAuthModal();
-    this.updateUI();
-    this.loadUserData();
   }
 
   // Logout
@@ -156,41 +183,18 @@ class AuthUI {
       // User Profile laden
       const profile = await window.supabaseClient.getUserProfile(this.currentUser.id);
       if (profile) {
-        // Profile in App-State setzen (falls die Funktion existiert)
+        // Profile in App-State setzen
         if (window.setUserProfile) {
           window.setUserProfile(profile);
-        } else {
-          // Fallback: Profile direkt setzen
-          if (window.appData) {
-            window.appData.user = {
-              name: profile.name,
-              created: profile.created_at
-            };
-          }
         }
       }
       
       // Trainingsdaten laden
       const trainingData = await window.supabaseClient.getTrainingData(this.currentUser.id);
       if (trainingData) {
-        // Trainingsdaten in App-State setzen (falls die Funktion existiert)
+        // Trainingsdaten in App-State setzen
         if (window.loadTrainingData) {
-          // Stelle sicher, dass die Daten die richtige Struktur haben
-          const formattedData = {
-            user: {
-              name: profile?.name || 'Benutzer',
-              created: profile?.created_at || new Date().toISOString()
-            },
-            exercises: trainingData.exercises || [],
-            settings: trainingData.settings || {}
-          };
-          window.loadTrainingData(formattedData);
-        } else {
-          // Fallback: Daten direkt setzen
-          if (window.appData) {
-            window.appData.exercises = trainingData.exercises || [];
-            window.appData.settings = trainingData.settings || {};
-          }
+          window.loadTrainingData(trainingData);
         }
       }
       
@@ -289,6 +293,29 @@ class AuthUI {
     
     setTimeout(() => {
       errorDiv.remove();
+    }, 5000);
+  }
+
+  // Success anzeigen
+  showSuccess(message) {
+    const successDiv = document.createElement('div');
+    successDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
+    successDiv.innerHTML = message;
+    
+    const form = document.getElementById('auth-form');
+    if (form) {
+      form.insertBefore(successDiv, form.firstChild);
+    } else {
+      // Falls kein Form vorhanden, als Notification anzeigen
+      if (window.showNotification) {
+        window.showNotification(message, 'success');
+      } else {
+        alert(message);
+      }
+    }
+    
+    setTimeout(() => {
+      successDiv.remove();
     }, 5000);
   }
 

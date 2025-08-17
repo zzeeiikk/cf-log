@@ -2753,3 +2753,6 @@ function renderOnboarding() {
       logout();
     }
   }
+
+  // Globale Funktionen für Cloud-Integration verfügbar machen
+  window.renderDashboard = renderDashboard;
