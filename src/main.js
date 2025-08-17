@@ -16,7 +16,6 @@ const MODULES = [
   'data.js',
   'ui.js',
   // Cloud Version Module (werden nur geladen wenn Cloud-Speicherung aktiviert ist)
-  'cloud-config.template.js', // Template wird geladen, echte Konfiguration muss separat erstellt werden
   'supabase.js',
   'auth-ui.js',
   'cloud-storage.js'
@@ -45,6 +44,9 @@ async function loadAllModules() {
       await loadModule(module);
     }
     
+    // Cloud-Konfiguration dynamisch laden
+    await loadCloudConfig();
+    
     // Initialize app after all modules are loaded
     main();
   } catch (error) {
@@ -56,6 +58,23 @@ async function loadAllModules() {
         </div>
       </div>
     `;
+  }
+}
+
+// Cloud-Konfiguration dynamisch laden
+async function loadCloudConfig() {
+  try {
+    // Versuche zuerst die echte Konfiguration zu laden
+    await loadModule('cloud-config.js');
+    console.log('Echte Cloud-Konfiguration geladen');
+  } catch (error) {
+    // Fallback auf Template
+    try {
+      await loadModule('cloud-config.template.js');
+      console.log('Cloud-Konfiguration Template geladen (keine echten API-Keys)');
+    } catch (templateError) {
+      console.warn('Keine Cloud-Konfiguration verfügbar');
+    }
   }
 }
 
