@@ -267,7 +267,6 @@ function renderOnboarding() {
       }
     };
   
-<<<<<<< Updated upstream
     // Cloud Form Toggle
     document.getElementById('toggle-cloud-form').onclick = () => {
       const loginForm = document.getElementById('cloud-login-form');
@@ -396,8 +395,6 @@ function renderOnboarding() {
       }
     };
     
-=======
->>>>>>> Stashed changes
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const gistId = e.target.gist_id.value.trim();
