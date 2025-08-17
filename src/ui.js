@@ -15,7 +15,7 @@ function renderOnboarding() {
           <div class="mb-6">
             <h2 class="text-center font-semibold text-gray-900 mt-3 mb-3">Speichermethode wählen</h2>
   
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-3 gap-3">
               <button type="button" id="storage-github" class="storage-option border-2 p-4 rounded-lg text-left transition-colors border-blue-500 bg-blue-100" data-type="github">
                 <div class="flex items-center gap-3">
                   <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
@@ -35,6 +35,17 @@ function renderOnboarding() {
                   <div>
                     <div class="font-medium text-gray-900">WebDAV</div>
                     <div class="text-sm text-gray-600">Eigener Server</div>
+                  </div>
+                </div>
+              </button>
+              <button type="button" id="storage-cloud" class="storage-option bg-purple-50 border-2 border-purple-200 p-4 rounded-lg text-left transition-colors" data-type="cloud">
+                <div class="flex items-center gap-3">
+                  <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+                  </svg>
+                  <div>
+                    <div class="font-medium text-gray-900">tba: Cloud</div>
+                    <div class="text-sm text-gray-600">Maximaler Komfort – wir kümmern uns um alles</div>
                   </div>
                 </div>
               </button>
@@ -156,6 +167,10 @@ function renderOnboarding() {
             // WebDAV Button zurücksetzen
             btn.classList.remove('border-green-500', 'bg-green-100');
             btn.classList.add('border-green-200', 'bg-green-50');
+          } else if (btnType === 'cloud') {
+            // Cloud Button zurücksetzen
+            btn.classList.remove('border-purple-500', 'bg-purple-100');
+            btn.classList.add('border-purple-200', 'bg-purple-50');
           }
         });
         
@@ -166,6 +181,9 @@ function renderOnboarding() {
         } else if (type === 'webdav') {
           button.classList.remove('border-green-200', 'bg-green-50');
           button.classList.add('border-green-500', 'bg-green-100');
+        } else if (type === 'cloud') {
+          button.classList.remove('border-purple-200', 'bg-purple-50');
+          button.classList.add('border-purple-500', 'bg-purple-100');
         }
         
         // Formulare ein-/ausblenden
@@ -177,6 +195,9 @@ function renderOnboarding() {
           document.getElementById('github-form').classList.remove('hidden');
         } else if (type === 'webdav') {
           document.getElementById('webdav-form').classList.remove('hidden');
+        } else if (type === 'cloud') {
+          // Cloud-Beta Anmeldung anzeigen
+          showCloudBetaSignup();
         }
       });
     });
@@ -2583,6 +2604,148 @@ function renderOnboarding() {
     }
   }
   
+  // E-Mail über EmailJS senden
+  async function sendBetaSignupEmail(email) {
+    // EmailJS laden falls noch nicht geladen
+    if (typeof emailjs === 'undefined') {
+      await loadEmailJS();
+    }
+    
+    // E-Mail an dich senden - einfache Version
+    const templateParams = {
+      email: email
+    };
+    
+    return emailjs.send(
+      window.EMAILJS_CONFIG.serviceId,
+      window.EMAILJS_CONFIG.templateId,
+      templateParams
+    );
+  }
+  
+  // EmailJS dynamisch laden
+  async function loadEmailJS() {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+      script.onload = () => {
+        emailjs.init(window.EMAILJS_CONFIG.publicKey);
+        resolve();
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  // Cloud-Beta Anmeldung anzeigen
+  function showCloudBetaSignup() {
+    // Modal HTML erstellen
+    const modalHTML = `
+      <div id="cloud-beta-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+          <div class="text-center">
+            <!-- Cloud-Icon -->
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-purple-100 mb-6">
+              <svg class="h-8 w-8 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
+              </svg>
+            </div>
+            
+            <!-- Titel -->
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">
+              Cloud-Speicherung kommt bald! 🚀
+            </h3>
+            
+            <!-- Beschreibung -->
+            <p class="text-gray-600 mb-6 leading-relaxed">
+              Wir arbeiten an der Cloud-Version von cf-log. 
+              <br><br>
+              <strong>Features:</strong>
+              <br>• Sichere Cloud-Speicherung
+              <br>• Automatische Synchronisation
+              <br>• Zugriff von überall
+            </p>
+            
+            <!-- E-Mail-Anmeldung -->
+            <form id="cloud-beta-form" class="space-y-4 mb-6">
+              <input type="email" id="beta-email" placeholder="Deine E-Mail-Adresse" required 
+                     class="w-full border border-gray-300 p-3 rounded-lg text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <button type="submit" 
+                      class="w-full bg-purple-500 hover:bg-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                Benachrichtigung erhalten
+              </button>
+            </form>
+            
+            <!-- Hinweis -->
+            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+              <p class="text-sm text-purple-800">
+                <strong>Gratis:</strong> Du erhältst eine E-Mail, sobald die Cloud-Version verfügbar ist. 
+                Keine Spam, nur wichtige Updates!
+              </p>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button id="cloud-beta-close" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                Schließen
+              </button>
+              <button id="cloud-beta-try-now" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                Jetzt testen (Demo)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Modal zum DOM hinzufügen
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Event Listeners
+    document.getElementById('cloud-beta-close').addEventListener('click', () => {
+      document.getElementById('cloud-beta-modal').remove();
+    });
+    
+    document.getElementById('cloud-beta-try-now').addEventListener('click', () => {
+      // Modal schließen
+      document.getElementById('cloud-beta-modal').remove();
+      
+      // Demo starten
+      const demoButton = document.getElementById('demo-btn');
+      demoButton.click();
+    });
+    
+    // E-Mail-Anmeldung
+    document.getElementById('cloud-beta-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('beta-email').value.trim();
+      
+      if (!email) return;
+      
+      try {
+        // E-Mail an dich senden (über EmailJS oder ähnlichen Service)
+        await sendBetaSignupEmail(email);
+        
+        // Erfolgsmeldung
+        showNotification('Danke! Du wirst benachrichtigt, sobald die Cloud-Version verfügbar ist.', 'success');
+        
+        // Modal schließen
+        document.getElementById('cloud-beta-modal').remove();
+        
+      } catch (error) {
+        console.error('Fehler beim Senden der E-Mail:', error);
+        showNotification('Fehler beim Speichern der E-Mail-Adresse. Bitte versuche es später erneut.', 'error');
+      }
+    });
+    
+    // Modal schließen bei Klick außerhalb
+    document.getElementById('cloud-beta-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'cloud-beta-modal') {
+        e.target.remove();
+      }
+    });
+  }
+
   // Main function
   async function main() {
     const storageType = localStorage.getItem('cf_log_storage_type') || 'github';

@@ -3,3 +3,7 @@ converted_trainingsdata.json
 
 converted_training_data.json
 logo*
+
+supabase/
+src/cloud-config.js
+src/emailjs-config.js

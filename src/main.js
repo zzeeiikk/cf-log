@@ -17,6 +17,16 @@ const MODULES = [
   'ui.js'
 ];
 
+// EmailJS Konfiguration laden (falls vorhanden)
+async function loadEmailJSConfig() {
+  try {
+    await loadModule('emailjs-config.js');
+    console.log('EmailJS Konfiguration geladen');
+  } catch (error) {
+    console.log('EmailJS Konfiguration nicht verfügbar');
+  }
+}
+
 let loadedModules = 0;
 
 function loadModule(moduleName) {
@@ -39,6 +49,9 @@ async function loadAllModules() {
     for (const module of MODULES) {
       await loadModule(module);
     }
+    
+    // EmailJS Konfiguration laden
+    await loadEmailJSConfig();
     
     // Initialize app after all modules are loaded
     main();
