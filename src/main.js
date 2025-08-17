@@ -14,7 +14,12 @@ const MODULES = [
   'mobile.js',
   'settings.js',
   'data.js',
-  'ui.js'
+  'ui.js',
+  // Cloud Version Module (werden nur geladen wenn Cloud-Speicherung aktiviert ist)
+  'cloud-config.js',
+  'supabase.js',
+  'auth-ui.js',
+  'cloud-storage.js'
 ];
 
 let loadedModules = 0;
