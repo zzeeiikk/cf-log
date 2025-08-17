@@ -312,6 +312,11 @@ function renderOnboarding() {
                 <span class="ml-3 text-sm text-gray-500">Hallo, ${userName}</span>
               </div>
               <div class="flex items-center space-x-4">
+                <!-- Auth Button für Cloud-Version -->
+                <div id="auth-button" class="mr-2">
+                  <!-- Wird automatisch von Auth UI gefüllt -->
+                </div>
+                
                 <button onclick="showAddExerciseModal()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white ${currentView === 'training' ? 'px-4 py-2' : 'px-3 py-1'} text-sm rounded-md font-medium transition-colors">
                   ${currentView === 'training' ? '+' : '+ Training'}
@@ -2583,6 +2588,48 @@ function renderOnboarding() {
     }
   }
   
+  // Cloud-Modus initialisieren
+  async function initCloudMode() {
+    try {
+      // Prüfen ob Cloud-Konfiguration verfügbar ist
+      if (window.CLOUD_CONFIG && 
+          window.CLOUD_CONFIG.supabase.url && 
+          window.CLOUD_CONFIG.supabase.url !== 'https://your-project.supabase.co' &&
+          window.cloudStorage) {
+        
+        console.log('Initialisiere Cloud-Modus...');
+        
+        const success = await window.cloudStorage.enableCloudMode(
+          window.CLOUD_CONFIG.supabase.url,
+          window.CLOUD_CONFIG.supabase.anonKey
+        );
+        
+        if (success) {
+          console.log('Cloud-Modus erfolgreich aktiviert');
+          
+          // Auth UI initialisieren
+          if (window.authUI) {
+            window.authUI.updateUI();
+          }
+          
+          // Prüfen ob User bereits eingeloggt ist
+          const currentUser = await window.supabaseClient.getCurrentUser();
+          if (currentUser) {
+            console.log('User bereits eingeloggt:', currentUser.email);
+            // User-Daten laden
+            await window.authUI.loadUserData();
+          }
+        } else {
+          console.warn('Cloud-Modus konnte nicht aktiviert werden');
+        }
+      } else {
+        console.log('Cloud-Konfiguration nicht verfügbar, verwende lokale Speicherung');
+      }
+    } catch (error) {
+      console.error('Fehler beim Initialisieren des Cloud-Modus:', error);
+    }
+  }
+  
   // Main function
   async function main() {
     const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
@@ -2594,6 +2641,9 @@ function renderOnboarding() {
       showInstallPromptAfterLogin();
       return;
     }
+    
+    // Cloud-Modus initialisieren (falls verfügbar)
+    await initCloudMode();
     
     // Storage Provider initialisieren
     try {
