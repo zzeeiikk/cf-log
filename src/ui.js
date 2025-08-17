@@ -180,14 +180,14 @@ function renderOnboarding() {
           </div>
           <div class="my-8 border-t border-neutral-400"></div>
           <!-- Demo Button -->
-          <div class="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <div class="mt-6 p-4 bg-neutral-50 rounded-lg border border-neutral-200">
             <div class="flex items-center justify-between">
               <div>
-                <h4 class="font-medium text-purple-900">App testen</h4>
-                <p class="text-sm text-purple-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
+                <h4 class="font-medium text-neutral-900">App testen</h4>
+                <p class="text-sm text-neutral-700 mt-1">Lade Beispieldaten mit 51 Trainings über 5 Jahre</p>
               </div>
               <button type="button" id="demo-btn" 
-                      class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                      class="bg-neutral-500 hover:bg-neutral-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                 Demo starten
               </button>
             </div>
@@ -241,8 +241,20 @@ function renderOnboarding() {
         } else if (type === 'webdav') {
           document.getElementById('webdav-form').classList.remove('hidden');
         } else if (type === 'cloud') {
-          // Cloud-Beta Anmeldung anzeigen
-          showCloudBetaSignup();
+          // Prüfen ob Cloud-Konfiguration verfügbar ist
+          if (window.CLOUD_CONFIG && 
+              window.CLOUD_CONFIG.supabase.url && 
+              window.CLOUD_CONFIG.supabase.url !== 'https://your-project.supabase.co') {
+            // Cloud-Funktionalität verfügbar - normale Cloud-Formulare anzeigen
+            document.getElementById('cloud-form').classList.remove('hidden');
+            // Standardmäßig Login-Formular anzeigen
+            document.getElementById('cloud-login-form').classList.remove('hidden');
+            document.getElementById('cloud-register-form').classList.add('hidden');
+            showCloudBetaSignup();
+          } else {
+            // Keine Cloud-Konfiguration - Beta-Anmeldung anzeigen
+            showCloudBetaSignup();
+          }
         }
       });
     });
@@ -506,6 +518,11 @@ function renderOnboarding() {
                 <span class="ml-3 text-sm text-gray-500">Hallo, ${userName}</span>
               </div>
               <div class="flex items-center space-x-4">
+                <!-- Auth Button für Cloud-Version -->
+                <div id="auth-button" class="mr-2">
+                  <!-- Wird automatisch von Auth UI gefüllt -->
+                </div>
+                
                 <button onclick="showAddExerciseModal()" 
                         class="bg-blue-600 hover:bg-blue-700 text-white ${currentView === 'training' ? 'px-4 py-2' : 'px-3 py-1'} text-sm rounded-md font-medium transition-colors">
                   ${currentView === 'training' ? '+' : '+ Training'}
@@ -2729,7 +2746,7 @@ function renderOnboarding() {
     }, 3000);
   }
   
-  function logout() {
+  async function logout() {
     const storageType = localStorage.getItem('cf_log_storage_type');
     const demoMode = localStorage.getItem('cf_log_demo_mode');
     
@@ -2739,6 +2756,32 @@ function renderOnboarding() {
         localStorage.removeItem('cf_log_demo_mode');
         localStorage.removeItem('cf_log_user_name');
         window.location.reload();
+      }
+      return;
+    }
+    
+    // Cloud-Logout behandeln
+    if (storageType === 'cloud') {
+      if (confirm('Möchtest du dich wirklich abmelden?')) {
+        try {
+          // Supabase Logout
+          if (window.supabaseClient) {
+            await window.supabaseClient.signOut();
+          }
+          
+          // Cloud-Daten löschen
+          localStorage.removeItem('cf_log_storage_type');
+          localStorage.removeItem('cf_log_user_name');
+          
+          // Zurück zur Onboarding-Seite
+          window.location.reload();
+        } catch (error) {
+          console.error('Fehler beim Logout:', error);
+          // Trotzdem zurücksetzen
+          localStorage.removeItem('cf_log_storage_type');
+          localStorage.removeItem('cf_log_user_name');
+          window.location.reload();
+        }
       }
       return;
     }
@@ -2917,8 +2960,54 @@ function renderOnboarding() {
         e.target.remove();
       }
     });
+    }
+  
+  // Cloud-Modus initialisieren
+  async function initCloudMode() {
+    try {
+      // Prüfen ob Cloud-Konfiguration verfügbar ist
+      if (window.CLOUD_CONFIG && 
+          window.CLOUD_CONFIG.supabase.url && 
+          window.CLOUD_CONFIG.supabase.url !== 'https://your-project.supabase.co' &&
+          window.cloudStorage) {
+        
+        console.log('Initialisiere Cloud-Modus...');
+        
+        const success = await window.cloudStorage.enableCloudMode(
+          window.CLOUD_CONFIG.supabase.url,
+          window.CLOUD_CONFIG.supabase.anonKey
+        );
+        
+        if (success) {
+          console.log('Cloud-Modus erfolgreich aktiviert');
+          
+          // Auth UI initialisieren
+          if (window.authUI) {
+            window.authUI.updateUI();
+          }
+          
+          // Prüfen ob User bereits eingeloggt ist
+          const currentUser = await window.supabaseClient.getCurrentUser();
+          if (currentUser) {
+            console.log('User bereits eingeloggt:', currentUser.email);
+            // User-Daten laden
+            await window.authUI.loadUserData();
+            
+            // Cloud-Storage als aktiv setzen
+            localStorage.setItem('cf_log_storage_type', 'cloud');
+            localStorage.setItem('cf_log_user_name', currentUser.email);
+          }
+        } else {
+          console.warn('Cloud-Modus konnte nicht aktiviert werden');
+        }
+      } else {
+        console.log('Cloud-Konfiguration nicht verfügbar, verwende lokale Speicherung');
+      }
+    } catch (error) {
+      console.error('Fehler beim Initialisieren des Cloud-Modus:', error);
+    }
   }
-
+  
   // Main function
   async function main() {
     const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
@@ -2930,6 +3019,12 @@ function renderOnboarding() {
       showInstallPromptAfterLogin();
       return;
     }
+    
+    // Cloud-Modus initialisieren (falls verfügbar)
+    await initCloudMode();
+    
+    // Storage Type nach Cloud-Initialisierung prüfen
+    const updatedStorageType = localStorage.getItem('cf_log_storage_type') || storageType;
     
     // Storage Provider initialisieren
     try {
@@ -2955,7 +3050,19 @@ function renderOnboarding() {
         }
         
         currentStorageProvider = new WebDAVProvider(url, username, password, filename);
+      } else if (updatedStorageType === 'cloud') {
+        console.log('Cloud-Storage wird verwendet');
+        // Cloud-Storage verwenden
+        if (window.cloudStorage && window.cloudStorage.isCloudMode) {
+          console.log('Cloud Storage ist verfügbar und aktiv');
+          currentStorageProvider = window.cloudStorage;
+        } else {
+          console.log('Cloud Storage nicht verfügbar, zeige Onboarding');
+          renderOnboarding();
+          return;
+        }
       } else {
+        console.log('Unbekannter Storage Type, zeige Onboarding');
         renderOnboarding();
         return;
       }
@@ -3038,123 +3145,3 @@ function renderOnboarding() {
     });
   }
 
-  // Cloud-Beta Anmeldung anzeigen
-  function showCloudBetaSignup() {
-    // Modal HTML erstellen
-    const modalHTML = `
-      <div id="cloud-beta-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
-          <div class="text-center">
-            <!-- Cloud-Icon -->
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-purple-100 mb-6">
-              <svg class="h-8 w-8 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96z"/>
-              </svg>
-            </div>
-            
-            <!-- Titel -->
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">
-              Cloud-Speicherung kommt bald! 🚀
-            </h3>
-            
-            <!-- Beschreibung -->
-            <p class="text-gray-600 mb-6 leading-relaxed">
-              Wir arbeiten an der Cloud-Version von cf-log. 
-              <br><br>
-              <strong>Features:</strong>
-              <br>• Sichere Cloud-Speicherung
-              <br>• Automatische Synchronisation
-              <br>• Zugriff von überall
-            </p>
-            
-            <!-- E-Mail-Anmeldung -->
-            <form id="cloud-beta-form" class="space-y-4 mb-6">
-              <input type="email" id="beta-email" placeholder="Deine E-Mail-Adresse" required 
-                     class="w-full border border-gray-300 p-3 rounded-lg text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
-              <button type="submit" 
-                      class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                Benachrichtigung erhalten
-              </button>
-            </form>
-            
-            <!-- Hinweis -->
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-              <p class="text-sm text-purple-800">
-                <strong>Gratis:</strong> Du erhältst eine E-Mail, sobald die Cloud-Version verfügbar ist. 
-                Keine Spam, nur wichtige Updates!
-              </p>
-            </div>
-            
-            <!-- Buttons -->
-            <div class="flex flex-col sm:flex-row gap-3">
-              <button id="cloud-beta-close" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                Schließen
-              </button>
-              <button id="cloud-beta-try-now" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                Jetzt testen (Demo)
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-    
-    // Modal zum DOM hinzufügen
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    // Event Listeners
-    document.getElementById('cloud-beta-close').addEventListener('click', () => {
-      document.getElementById('cloud-beta-modal').remove();
-    });
-    
-    document.getElementById('cloud-beta-try-now').addEventListener('click', () => {
-      // Modal schließen
-      document.getElementById('cloud-beta-modal').remove();
-      
-      // Demo starten
-      const demoButton = document.getElementById('demo-btn');
-      demoButton.click();
-    });
-    
-    // E-Mail-Anmeldung
-    document.getElementById('cloud-beta-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('beta-email').value.trim();
-      
-      if (!email) return;
-      
-      try {
-        // E-Mail-Adresse lokal speichern
-        const betaEmails = JSON.parse(localStorage.getItem('cf_log_beta_emails') || '[]');
-        if (!betaEmails.includes(email)) {
-          betaEmails.push(email);
-          localStorage.setItem('cf_log_beta_emails', JSON.stringify(betaEmails));
-        }
-        
-        // E-Mail an dich senden (falls EmailJS verfügbar)
-        if (window.EMAILJS_CONFIG) {
-          try {
-            await sendBetaSignupEmail(email);
-          } catch (emailError) {
-            console.warn('EmailJS nicht verfügbar:', emailError);
-          }
-        }
-        
-        // Erfolgsmeldung
-        showNotification('Danke! Du wirst benachrichtigt, sobald die Cloud-Version verfügbar ist.', 'success');
-        
-        // Modal schließen
-        document.getElementById('cloud-beta-modal').remove();
-        
-      } catch (error) {
-        showNotification('Fehler beim Speichern der E-Mail-Adresse.', 'error');
-      }
-    });
-    
-    // Modal schließen bei Klick außerhalb
-    document.getElementById('cloud-beta-modal').addEventListener('click', (e) => {
-      if (e.target.id === 'cloud-beta-modal') {
-        e.target.remove();
-      }
-    });
-  }
