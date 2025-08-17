@@ -250,6 +250,7 @@ function renderOnboarding() {
             // Standardmäßig Login-Formular anzeigen
             document.getElementById('cloud-login-form').classList.remove('hidden');
             document.getElementById('cloud-register-form').classList.add('hidden');
+            showCloudBetaSignup(); // Modal anzeigen 
           } else {
             // Keine Cloud-Konfiguration - Beta-Anmeldung anzeigen
             showCloudBetaSignup();

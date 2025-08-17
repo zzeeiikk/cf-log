@@ -27,7 +27,7 @@ const CLOUD_CONFIG = {
       name: 'Kostenlos',
       price: 0,
       features: {
-        maxTrainingsPerMonth: 10, // Sehr begrenzt für kostenlosen Plan
+        maxTrainingsPerMonth: 100, // Erhöht für Import-Tests
         maxDataSize: 5 * 1024 * 1024, // 5MB
         basicStats: true,
         exportJSON: true,
