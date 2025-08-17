@@ -1,32 +1,32 @@
-// Cloud Storage Provider für cf-log
+// Cloud Storage Integration für cf-log
+// Erweitert die bestehende Storage-API um Cloud-Funktionalität
+
 class CloudStorage {
   constructor() {
     this.isCloudMode = false;
-    this.supabaseUrl = null;
-    this.supabaseKey = null;
     this.currentUser = null;
+    this.subscription = null;
   }
 
   // Cloud-Modus aktivieren
   async enableCloudMode(supabaseUrl, supabaseKey) {
     try {
-      this.supabaseUrl = supabaseUrl;
-      this.supabaseKey = supabaseKey;
-      
       // Supabase Client initialisieren
-      window.supabaseClient = new window.SupabaseClient(supabaseUrl, supabaseKey);
+      const success = await window.supabaseClient.init(supabaseUrl, supabaseKey);
+      if (!success) {
+        throw new Error('Supabase Client konnte nicht initialisiert werden');
+      }
+
+      this.isCloudMode = true;
       
       // Prüfen ob User bereits eingeloggt ist
-      this.currentUser = await window.supabaseClient.getCurrentUser();
-      
-      this.isCloudMode = true;
-      console.log('Cloud-Modus aktiviert');
-      
-      // Realtime Sync aktivieren
-      if (this.currentUser) {
-        this.enableRealtimeSync();
+      const user = await window.supabaseClient.getCurrentUser();
+      if (user) {
+        this.currentUser = user;
+        await this.loadSubscriptionStatus();
       }
       
+      console.log('Cloud-Modus aktiviert');
       return true;
     } catch (error) {
       console.error('Fehler beim Aktivieren des Cloud-Modus:', error);
@@ -37,28 +37,53 @@ class CloudStorage {
   // Cloud-Modus deaktivieren
   disableCloudMode() {
     this.isCloudMode = false;
-    this.supabaseUrl = null;
-    this.supabaseKey = null;
     this.currentUser = null;
+    this.subscription = null;
     console.log('Cloud-Modus deaktiviert');
   }
 
-  // Daten speichern
+  // Daten speichern (Cloud oder lokal)
   async saveData(data) {
-    if (!this.isCloudMode || !this.currentUser) {
-      throw new Error('Cloud-Modus nicht aktiv oder User nicht eingeloggt');
+    if (this.isCloudMode && this.currentUser) {
+      return await this.saveToCloud(data);
+    } else {
+      return await this.saveToLocal(data);
     }
+  }
 
+  // Daten laden (Cloud oder lokal)
+  async loadData() {
+    if (this.isCloudMode && this.currentUser) {
+      return await this.loadFromCloud();
+    } else {
+      return await this.loadFromLocal();
+    }
+  }
+
+  // Kompatibilität mit bestehender Storage-API
+  async load() {
+    return await this.loadData();
+  }
+
+  async save(data) {
+    return await this.saveData(data);
+  }
+
+  // Daten in Cloud speichern
+  async saveToCloud(data) {
     try {
-      // Nutzungslimits prüfen
-      await this.checkUsageLimits(data);
+      // Usage Limits prüfen
+      if (!this.checkUsageLimits(data)) {
+        throw new Error('Nutzungslimits überschritten. Bitte upgraden Sie Ihr Abonnement.');
+      }
+
+      // Daten in Supabase speichern
+      await window.supabaseClient.saveTrainingData(this.currentUser.id, data);
       
-      // Daten in Cloud speichern
-      await this.saveToCloud(data);
-      
-      // Nutzungsverfolgung aktualisieren
+      // Usage Tracking aktualisieren
       await this.updateUsageTracking(data);
       
+      console.log('Daten in Cloud gespeichert');
       return true;
     } catch (error) {
       console.error('Fehler beim Speichern in Cloud:', error);
@@ -66,215 +91,276 @@ class CloudStorage {
     }
   }
 
-  // Daten laden
-  async loadData() {
-    if (!this.isCloudMode || !this.currentUser) {
-      throw new Error('Cloud-Modus nicht aktiv oder User nicht eingeloggt');
-    }
-
-    try {
-      return await this.loadFromCloud();
-    } catch (error) {
-      console.error('Fehler beim Laden aus Cloud:', error);
-      throw error;
-    }
-  }
-
-  // Wrapper für Kompatibilität
-  async save(data) {
-    return this.saveData(data);
-  }
-
-  async load() {
-    return this.loadData(data);
-  }
-
-  // Daten in Cloud speichern
-  async saveToCloud(data) {
-    const result = await window.supabaseClient.saveTrainingData(this.currentUser.id, data);
-    
-    if (result.error) {
-      throw new Error('Fehler beim Speichern in Cloud: ' + result.error.message);
-    }
-    
-    console.log('Daten erfolgreich in Cloud gespeichert');
-  }
-
   // Daten aus Cloud laden
   async loadFromCloud() {
-    const result = await window.supabaseClient.getTrainingData(this.currentUser.id);
-    
-    if (result.error) {
-      if (result.error.code === 'PGRST116') {
-        // Keine Daten vorhanden - Standard-Daten zurückgeben
-        console.log('Verwende Standard-Daten aufgrund von Fehler');
+    try {
+      const data = await window.supabaseClient.getTrainingData(this.currentUser.id);
+      console.log('Daten aus Cloud geladen');
+      
+      // Falls keine Daten vorhanden sind, Standard-Daten zurückgeben
+      if (!data) {
+        console.log('Keine Trainingsdaten in Cloud gefunden, verwende Standard-Daten');
         return this.getDefaultDataStructure();
       }
-      throw new Error('Fehler beim Laden aus Cloud: ' + result.error.message);
+      
+      return data;
+    } catch (error) {
+      console.error('Fehler beim Laden aus Cloud:', error);
+      
+      // Bei Fehlern (z.B. keine Daten vorhanden) Standard-Daten zurückgeben
+      console.log('Verwende Standard-Daten aufgrund von Fehler');
+      return this.getDefaultDataStructure();
     }
-    
-    return result.data?.data || this.getDefaultDataStructure();
   }
 
-  // Lokale Speicherung als Fallback
+  // Daten lokal speichern (Fallback)
   async saveToLocal(data) {
-    localStorage.setItem('cf_log_data', JSON.stringify(data));
+    // Verwende bestehende Storage-API
+    if (window.saveData) {
+      return await window.saveData(data);
+    }
+    throw new Error('Lokale Speicherung nicht verfügbar');
   }
 
+  // Daten lokal laden (Fallback)
   async loadFromLocal() {
-    const data = localStorage.getItem('cf_log_data');
-    return data ? JSON.parse(data) : this.getDefaultDataStructure();
+    // Verwende bestehende Storage-API
+    if (window.loadData) {
+      return await window.loadData();
+    }
+    throw new Error('Lokale Speicherung nicht verfügbar');
   }
 
-  // Nutzungslimits prüfen
-  async checkUsageLimits(data) {
-    if (!window.CLOUD_CONFIG) return;
+  // Usage Limits prüfen
+  checkUsageLimits(data) {
+    if (!this.subscription) return true; // Keine Limits für nicht eingeloggte User
     
-    const plan = await this.loadSubscriptionStatus();
-    const limits = window.CLOUD_CONFIG.plans[plan.plan_type || 'free'];
+    const plan = window.getCurrentPlan(this.subscription);
     
-    if (!limits) return;
-    
-    // Anzahl Trainings prüfen
+    // Trainings-Anzahl prüfen
     const trainingCount = data.exercises?.length || 0;
-    if (limits.maxTrainingsPerMonth && trainingCount > limits.maxTrainingsPerMonth) {
-      throw new Error(`Nutzungslimits überschritten. Bitte upgraden Sie Ihr Abonnement.`);
+    if (!window.checkUsageLimit(this.subscription, trainingCount, 'maxTrainingsPerMonth')) {
+      return false;
     }
     
-    // Datenmenge prüfen
+    // Daten-Größe prüfen
     const dataSize = JSON.stringify(data).length;
-    if (limits.maxDataSize && dataSize > limits.maxDataSize) {
-      throw new Error(`Datenmenge überschritten. Bitte upgraden Sie Ihr Abonnement.`);
+    if (!window.checkUsageLimit(this.subscription, dataSize, 'maxDataSize')) {
+      return false;
     }
+    
+    return true;
   }
 
-  // Nutzungsverfolgung aktualisieren
+  // Usage Tracking aktualisieren
   async updateUsageTracking(data) {
-    if (!window.CLOUD_CONFIG) return;
+    if (!this.currentUser) return;
     
+    const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
     const trainingCount = data.exercises?.length || 0;
     const dataSize = JSON.stringify(data).length;
     
-    // Hier könnte die Nutzungsverfolgung in der Datenbank aktualisiert werden
-    console.log(`Nutzung aktualisiert: ${trainingCount} Trainings, ${dataSize} Bytes`);
+    try {
+      await window.supabaseClient.client
+        .from('usage_tracking')
+        .upsert({
+          user_id: this.currentUser.id,
+          month: currentMonth,
+          training_count: trainingCount,
+          data_size_bytes: dataSize
+        });
+    } catch (error) {
+      console.error('Fehler beim Update des Usage Tracking:', error);
+    }
   }
 
-  // Abonnement-Status laden
+  // Subscription Status laden
   async loadSubscriptionStatus() {
-    if (!this.currentUser) return { plan_type: 'free' };
+    if (!this.currentUser) return;
     
-    const result = await window.supabaseClient.getSubscriptionStatus(this.currentUser.id);
-    return result.data || { plan_type: 'free' };
+    try {
+      this.subscription = await window.supabaseClient.getSubscriptionStatus(this.currentUser.id);
+      console.log('Subscription Status geladen:', this.subscription);
+    } catch (error) {
+      console.error('Fehler beim Laden des Subscription Status:', error);
+    }
+  }
+
+  // Standard-Datenstruktur aus data.js laden
+  getDefaultDataStructure() {
+    // Versuche die Standard-Daten aus data.js zu laden
+    if (window.appData) {
+      return {
+        user: {
+          name: this.currentUser?.email || '',
+          created: new Date().toISOString().split('T')[0] // Konsistent mit data.js
+        },
+        exercises: [],
+        settings: {
+          defaultExercises: window.appData.settings?.defaultExercises || this.getDefaultExercises(),
+          theme: window.appData.settings?.theme || 'light'
+        }
+      };
+    }
+    
+    // Fallback falls data.js noch nicht geladen ist
+    return {
+      user: {
+        name: this.currentUser?.email || '',
+        created: new Date().toISOString().split('T')[0]
+      },
+      exercises: [],
+      settings: {
+        defaultExercises: this.getDefaultExercises(),
+        theme: 'light'
+      }
+    };
+  }
+
+  // Standardübungen aus data.js laden
+  getDefaultExercises() {
+    // Versuche die Standardübungen aus data.js zu laden
+    if (window.appData && window.appData.settings && window.appData.settings.defaultExercises) {
+      return window.appData.settings.defaultExercises;
+    }
+    
+    // Fallback falls data.js noch nicht geladen ist
+    return [
+      "Deadlift",
+      "Squat", 
+      "Clean and Jerk",
+      "Snatch",
+      "Strict Press",
+      "Power Clean",
+      "Thruster",
+      "Pull-ups",
+      "Toes-to-Bar",
+      "Muscle-ups",
+      "Handstand Push-ups",
+      "Push-ups",
+      "Burpees",
+      "Dips",
+      "Rope Jumps",
+      "Sit-ups",
+      "Air Squat",
+      "Front Squat",
+      "Back Squat",
+      "Squat Cleans"
+    ];
   }
 
   // Realtime Sync aktivieren
   enableRealtimeSync() {
-    if (!this.currentUser) return;
+    if (!this.isCloudMode || !this.currentUser) return;
     
-    window.supabaseClient.subscribeToTrainingData(this.currentUser.id, (payload) => {
-      this.handleRealtimeUpdate(payload);
-    });
+    if (!window.hasFeature(this.subscription, 'realtimeSync')) {
+      console.log('Realtime Sync nicht verfügbar für aktuellen Plan');
+      return;
+    }
+    
+    try {
+      window.supabaseClient.subscribeToTrainingData(this.currentUser.id, (payload) => {
+        console.log('Realtime Update empfangen:', payload);
+        this.handleRealtimeUpdate(payload);
+      });
+      console.log('Realtime Sync aktiviert');
+    } catch (error) {
+      console.error('Fehler beim Aktivieren von Realtime Sync:', error);
+    }
   }
 
   // Realtime Update Handler
   handleRealtimeUpdate(payload) {
-    console.log('Realtime Update:', payload);
-    
     if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-      // UI aktualisieren
-      if (window.refreshData) {
-        window.refreshData();
-      }
+      // Daten neu laden und UI aktualisieren
+      this.loadData().then(data => {
+        if (window.refreshUI) {
+          window.refreshUI(data);
+        }
+      });
     }
   }
 
-  // Daten exportieren
+  // Export-Funktionen erweitern
   async exportData(format = 'json') {
     const data = await this.loadData();
     
-    switch (format) {
-      case 'json':
-        return this.exportAsJSON(data);
-      case 'csv':
-        return this.exportAsCSV(data);
-      default:
-        throw new Error('Unbekanntes Export-Format');
+    if (format === 'json') {
+      return this.exportAsJSON(data);
+    } else if (format === 'csv') {
+      if (!window.hasFeature(this.subscription, 'exportCSV')) {
+        throw new Error('CSV-Export nur in Pro-Plan verfügbar');
+      }
+      return this.exportAsCSV(data);
     }
+    
+    throw new Error('Unbekanntes Export-Format');
   }
 
+  // JSON Export
   exportAsJSON(data) {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cf-log-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    
-    URL.revokeObjectURL(url);
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json'
+    });
+    return blob;
   }
 
+  // CSV Export
   exportAsCSV(data) {
-    // CSV Export implementieren
-    console.log('CSV Export:', data);
+    const exercises = data.exercises || [];
+    let csv = 'Datum,Übung,Wiederholungen,Gewicht,Notizen\n';
+    
+    exercises.forEach(exercise => {
+      exercise.sets.forEach(set => {
+        csv += `"${exercise.date}","${exercise.exercise}","${set.reps}","${set.weight}","${set.notes || ''}"\n`;
+      });
+    });
+    
+    const blob = new Blob([csv], {
+      type: 'text/csv;charset=utf-8;'
+    });
+    return blob;
   }
 
   // Backup erstellen
   async createBackup() {
     const data = await this.loadData();
-    const backup = {
-      ...data,
-      backup_created: new Date().toISOString(),
-      version: '1.0'
-    };
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+    const filename = `cf-log-backup-${timestamp}.json`;
     
-    return this.exportAsJSON(backup);
+    const blob = this.exportAsJSON(data);
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    
+    URL.revokeObjectURL(url);
   }
 
-  // Sync-Status prüfen
+  // Sync Status prüfen
   async checkSyncStatus() {
-    if (!this.isCloudMode) return { synced: false, reason: 'Cloud-Modus nicht aktiv' };
+    if (!this.isCloudMode || !this.currentUser) {
+      return { synced: true, lastSync: null };
+    }
     
     try {
       const cloudData = await this.loadFromCloud();
       const localData = await this.loadFromLocal();
       
-      const cloudHash = JSON.stringify(cloudData);
-      const localHash = JSON.stringify(localData);
+      const cloudTimestamp = cloudData?.lastModified;
+      const localTimestamp = localData?.lastModified;
       
       return {
-        synced: cloudHash === localHash,
-        lastSync: new Date().toISOString()
+        synced: cloudTimestamp === localTimestamp,
+        lastSync: cloudTimestamp,
+        hasLocalChanges: localTimestamp > cloudTimestamp
       };
     } catch (error) {
-      return { synced: false, reason: error.message };
+      console.error('Fehler beim Prüfen des Sync-Status:', error);
+      return { synced: false, error: error.message };
     }
-  }
-
-  // Standard-Datenstruktur
-  getDefaultDataStructure() {
-    return {
-      exercises: this.getDefaultExercises(),
-      settings: {
-        defaultExercises: ["Bankdrücken", "Kniebeugen", "Klimmzüge"],
-        theme: "light"
-      },
-      user: {
-        name: this.currentUser?.email || "Cloud User",
-        created: new Date().toISOString()
-      }
-    };
-  }
-
-  // Standard-Übungen
-  getDefaultExercises() {
-    // Lade Standard-Übungen aus data.js
-    if (window.getDefaultExercises) {
-      return window.getDefaultExercises();
-    }
-    
-    // Fallback
-    return [];
   }
 }
 

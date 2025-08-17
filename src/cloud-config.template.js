@@ -1,45 +1,109 @@
-// Cloud-Konfiguration Template
-// Kopiere diese Datei zu cloud-config.js und fülle deine echten API-Keys ein
+// Cloud Version Konfiguration Template für cf-log
+// Kopiere diese Datei zu cloud-config.js und setze deine echten Keys ein
 
-window.CLOUD_CONFIG = {
+const CLOUD_CONFIG = {
   // Supabase Konfiguration
   supabase: {
-    url: 'https://your-project.supabase.co',
-    anonKey: 'your-anon-key'
+    // Diese Werte müssen in der Produktion gesetzt werden
+    url: 'https://your-project.supabase.co', // Deine Supabase Project URL
+    anonKey: 'your-anon-key', // Dein Supabase anon public key
   },
-  
+
   // Feature Flags
   features: {
+    cloudStorage: true,
     realtimeSync: true,
-    csvExport: true,
+    userProfiles: true,
+    subscriptionManagement: true,
+    usageTracking: true,
+    exportFeatures: true,
     advancedStats: true,
-    autoBackup: true
+    teamFeatures: false, // Für später
   },
-  
-  // Pläne und Limits
+
+  // Subscription Plans
   plans: {
     free: {
-      maxTrainingsPerMonth: 10,
-      maxDataSize: 1024 * 1024, // 1MB
-      features: ['basicSync', 'jsonExport']
+      name: 'Kostenlos',
+      price: 0,
+      features: {
+        maxTrainingsPerMonth: 10, // Sehr begrenzt für kostenlosen Plan
+        maxDataSize: 5 * 1024 * 1024, // 5MB
+        basicStats: true,
+        exportJSON: true,
+        realtimeSync: false,
+        advancedStats: false,
+        teamFeatures: false,
+      }
     },
     pro: {
-      maxTrainingsPerMonth: -1, // Unbegrenzt
-      maxDataSize: 10 * 1024 * 1024, // 10MB
-      features: ['realtimeSync', 'csvExport', 'advancedStats', 'autoBackup']
+      name: 'Pro',
+      price: 4.99,
+      features: {
+        maxTrainingsPerMonth: -1, // Unbegrenzt
+        maxDataSize: 100 * 1024 * 1024, // 100MB
+        basicStats: true,
+        exportJSON: true,
+        exportCSV: true,
+        realtimeSync: true,
+        advancedStats: true,
+        teamFeatures: false,
+      }
     }
+    // Weitere Pläne können später hinzugefügt werden:
+    // team: { ... },
+    // enterprise: { ... }
   },
-  
+
+  // Usage Limits
+  limits: {
+    maxTrainingsPerRequest: 1000,
+    maxDataSizePerRequest: 5 * 1024 * 1024, // 5MB
+    maxConcurrentConnections: 5,
+  },
+
   // UI Konfiguration
   ui: {
-    primaryColor: '#8b5cf6', // Purple
-    accentColor: '#f59e0b', // Amber
-    brandName: 'cf-log Cloud'
+    showCloudFeatures: true,
+    showSubscriptionUpgrade: true,
+    showUsageStats: true,
+    showTeamFeatures: false,
   },
-  
-  // Stripe Konfiguration (für zukünftige Zahlungen)
+
+  // Stripe Konfiguration (für später)
   stripe: {
-    publishableKey: 'your-stripe-publishable-key',
-    priceId: 'your-stripe-price-id'
+    publishableKey: 'pk_test_...', // Dein Stripe publishable key
+    priceIds: {
+      pro: 'price_...', // Deine Stripe price ID für Pro-Plan
+      // Weitere Pläne können später hinzugefügt werden:
+      // team: 'price_...',
+    }
   }
 };
+
+// Hilfsfunktionen
+function getCurrentPlan(userSubscription) {
+  if (!userSubscription || userSubscription.plan_type === 'free') {
+    return CLOUD_CONFIG.plans.free;
+  }
+  return CLOUD_CONFIG.plans[userSubscription.plan_type] || CLOUD_CONFIG.plans.free;
+}
+
+function hasFeature(userSubscription, feature) {
+  const plan = getCurrentPlan(userSubscription);
+  return plan.features[feature] || false;
+}
+
+function checkUsageLimit(userSubscription, currentUsage, limitType) {
+  const plan = getCurrentPlan(userSubscription);
+  const limit = plan.features[limitType];
+  
+  if (limit === -1) return true; // Unbegrenzt
+  return currentUsage < limit;
+}
+
+// Export für globale Verwendung
+window.CLOUD_CONFIG = CLOUD_CONFIG;
+window.getCurrentPlan = getCurrentPlan;
+window.hasFeature = hasFeature;
+window.checkUsageLimit = checkUsageLimit;
