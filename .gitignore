@@ -4,6 +4,25 @@ converted_trainingsdata.json
 converted_training_data.json
 logo*
 
-supabase/
+# Sensible Konfigurationsdateien
 src/cloud-config.js
 src/emailjs-config.js
+.env
+.env.local
+.env.production
+
+# API Keys und Secrets
+*secret*
+*key*
+*password*
+*token*
+
+# Supabase
+.supabase/
+
+# Dokumentation mit sensiblen Informationen
+supabase/
+docs/
+CLOUD_*.md
+SETUP_*.md
+NEXT_STEPS.md

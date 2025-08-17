@@ -14,7 +14,11 @@ const MODULES = [
   'mobile.js',
   'settings.js',
   'data.js',
-  'ui.js'
+  'ui.js',
+  // Cloud Version Module (werden nur geladen wenn Cloud-Speicherung aktiviert ist)
+  'supabase.js',
+  'auth-ui.js',
+  'cloud-storage.js'
 ];
 
 // EmailJS Konfiguration laden (falls vorhanden)
@@ -64,6 +68,23 @@ async function loadAllModules() {
         </div>
       </div>
     `;
+  }
+}
+
+// Cloud-Konfiguration dynamisch laden
+async function loadCloudConfig() {
+  try {
+    // Versuche zuerst die echte Konfiguration zu laden
+    await loadModule('cloud-config.js');
+    console.log('Echte Cloud-Konfiguration geladen');
+  } catch (error) {
+    // Fallback auf Template
+    try {
+      await loadModule('cloud-config.template.js');
+      console.log('Cloud-Konfiguration Template geladen (keine echten API-Keys)');
+    } catch (templateError) {
+      console.warn('Keine Cloud-Konfiguration verfügbar');
+    }
   }
 }
 
