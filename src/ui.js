@@ -158,7 +158,7 @@ function renderOnboarding() {
               </button>
             </form>
             
-            <form id="cloud-register-form" class="space-y-4 mb-6">
+            <form id="cloud-register-form" class="space-y-4 mb-6 hidden">
               <input type="text" name="name" placeholder="Name" required 
                      class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
               <input type="email" name="email" placeholder="E-Mail" required 
@@ -174,7 +174,7 @@ function renderOnboarding() {
             <div class="text-center">
               <button type="button" id="toggle-cloud-form" 
                       class="text-purple-600 hover:text-purple-800 text-sm">
-                Bereits ein Konto? Anmelden
+                Noch kein Konto? Registrieren
               </button>
             </div>
           </div>
@@ -339,25 +339,46 @@ function renderOnboarding() {
         }
         
         // Registrierung über Supabase
-        await window.supabaseClient.signUp(email, password);
+        const { data, error } = await window.supabaseClient.signUp(email, password);
         
-        // User Profile erstellen
-        const currentUser = await window.supabaseClient.getCurrentUser();
-        if (currentUser) {
-          await window.supabaseClient.saveUserProfile(currentUser.id, {
+        if (error) {
+          showNotification('Registrierung fehlgeschlagen: ' + error.message, 'error');
+          return;
+        }
+        
+        // Prüfen ob E-Mail-Bestätigung erforderlich ist
+        if (data.user && !data.session) {
+          showNotification('Registrierung erfolgreich! Bitte bestätige deine E-Mail-Adresse und melde dich dann an.', 'success');
+          
+          // Zurück zum Login-Formular
+          const loginForm = document.getElementById('cloud-login-form');
+          const registerForm = document.getElementById('cloud-register-form');
+          const toggleBtn = document.getElementById('toggle-cloud-form');
+          
+          loginForm.classList.remove('hidden');
+          registerForm.classList.add('hidden');
+          toggleBtn.textContent = 'Noch kein Konto? Registrieren';
+          
+          return;
+        }
+        
+        // Falls automatisch eingeloggt (E-Mail-Bestätigung deaktiviert)
+        if (data.user && data.session) {
+          // User Profile erstellen
+          await window.supabaseClient.saveUserProfile(data.user.id, {
             name: name,
             created: new Date().toISOString(),
             settings: {}
           });
+          
+          // User-Daten laden
+          await window.authUI.loadUserData();
+          
+          // Zur Dashboard wechseln
+          localStorage.setItem('cf_log_storage_type', 'cloud');
+          localStorage.setItem('cf_log_user_name', name);
+          window.location.reload();
         }
-        
-        // User-Daten laden
-        await window.authUI.loadUserData();
-        
-        // Zur Dashboard wechseln
-        localStorage.setItem('cf_log_storage_type', 'cloud');
-        localStorage.setItem('cf_log_user_name', name);
-        window.location.reload();
         
       } catch (err) {
         showNotification('Registrierung fehlgeschlagen: ' + err.message, 'error');
@@ -2703,7 +2724,7 @@ function renderOnboarding() {
     }, 3000);
   }
   
-  function logout() {
+  async function logout() {
     const storageType = localStorage.getItem('cf_log_storage_type');
     const demoMode = localStorage.getItem('cf_log_demo_mode');
     
@@ -2720,17 +2741,25 @@ function renderOnboarding() {
     // Cloud-Logout behandeln
     if (storageType === 'cloud') {
       if (confirm('Möchtest du dich wirklich abmelden?')) {
-        // Supabase Logout
-        if (window.supabaseClient) {
-          window.supabaseClient.signOut();
+        try {
+          // Supabase Logout
+          if (window.supabaseClient) {
+            await window.supabaseClient.signOut();
+          }
+          
+          // Cloud-Daten löschen
+          localStorage.removeItem('cf_log_storage_type');
+          localStorage.removeItem('cf_log_user_name');
+          
+          // Zurück zur Onboarding-Seite
+          window.location.reload();
+        } catch (error) {
+          console.error('Fehler beim Logout:', error);
+          // Trotzdem zurücksetzen
+          localStorage.removeItem('cf_log_storage_type');
+          localStorage.removeItem('cf_log_user_name');
+          window.location.reload();
         }
-        
-        // Cloud-Daten löschen
-        localStorage.removeItem('cf_log_storage_type');
-        localStorage.removeItem('cf_log_user_name');
-        
-        // Zurück zur Onboarding-Seite
-        window.location.reload();
       }
       return;
     }
