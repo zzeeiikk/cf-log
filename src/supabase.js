@@ -1,159 +1,105 @@
-// Supabase Client für cf-log Cloud Version
-// Diese Datei wird nur geladen, wenn Cloud-Speicherung aktiviert ist
-
+// Supabase Client für Cloud-Funktionalität
 class SupabaseClient {
-  constructor() {
-    this.client = null;
-    this.isInitialized = false;
+  constructor(url, anonKey) {
+    this.supabase = supabase.createClient(url, anonKey);
+    console.log('Supabase Client initialisiert');
   }
 
-  // Initialisiere Supabase Client
-  async init(supabaseUrl, supabaseKey) {
-    try {
-      // Dynamisch Supabase JS Client laden
-      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-      
-      this.client = createClient(supabaseUrl, supabaseKey);
-      this.isInitialized = true;
-      
-      console.log('Supabase Client initialisiert');
-      return true;
-    } catch (error) {
-      console.error('Fehler beim Initialisieren von Supabase:', error);
-      return false;
-    }
+  async init() {
+    // Prüfen ob User bereits eingeloggt ist
+    const { data: { user } } = await this.supabase.auth.getUser();
+    return user;
   }
 
-  // User Authentication
   async signUp(email, password) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data, error } = await this.client.auth.signUp({
-      email,
-      password
+    const { data, error } = await this.supabase.auth.signUp({
+      email: email,
+      password: password
     });
-    
     return { data, error };
   }
 
   async signIn(email, password) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data, error } = await this.client.auth.signInWithPassword({
-      email,
-      password
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email: email,
+      password: password
     });
-    
     return { data, error };
   }
 
   async signOut() {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { error } = await this.client.auth.signOut();
-    if (error) throw error;
+    const { error } = await this.supabase.auth.signOut();
+    return { error };
   }
 
   async getCurrentUser() {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data: { user } } = await this.client.auth.getUser();
+    const { data: { user } } = await this.supabase.auth.getUser();
     return user;
   }
 
-  // Trainingsdaten CRUD Operationen
   async saveTrainingData(userId, data) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data: result, error } = await this.client
+    const { data: result, error } = await this.supabase
       .from('training_data')
       .upsert({
         user_id: userId,
         data: data,
         updated_at: new Date().toISOString()
       });
-    
-    if (error) throw error;
-    return result;
+    return { data: result, error };
   }
 
   async getTrainingData(userId) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data, error } = await this.client
+    const { data, error } = await this.supabase
       .from('training_data')
       .select('data')
       .eq('user_id', userId)
       .single();
-    
-    if (error) throw error;
-    return data?.data || null;
+    return { data, error };
   }
 
-  // User Profile Management
   async saveUserProfile(userId, profile) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data, error } = await this.client
+    const { data, error } = await this.supabase
       .from('user_profiles')
       .upsert({
         user_id: userId,
         name: profile.name,
-        settings: profile.settings,
-        created_at: profile.created,
+        email: profile.email,
+        settings: profile.settings || {},
         updated_at: new Date().toISOString()
       });
-    
-    if (error) throw error;
-    return data;
+    return { data, error };
   }
 
   async getUserProfile(userId) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data, error } = await this.client
+    const { data, error } = await this.supabase
       .from('user_profiles')
       .select('*')
       .eq('user_id', userId)
       .single();
-    
-    if (error) throw error;
-    return data;
+    return { data, error };
   }
 
-  // Subscription Management
   async getSubscriptionStatus(userId) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    const { data, error } = await this.client
+    const { data, error } = await this.supabase
       .from('subscriptions')
       .select('*')
       .eq('user_id', userId)
       .single();
-    
-    if (error) throw error;
-    return data;
+    return { data, error };
   }
 
-  // Realtime Subscription für Live-Updates
-  subscribeToTrainingData(userId, callback) {
-    if (!this.isInitialized) throw new Error('Supabase nicht initialisiert');
-    
-    return this.client
+  async subscribeToTrainingData(userId, callback) {
+    return this.supabase
       .channel('training_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'training_data',
-          filter: `user_id=eq.${userId}`
-        },
-        callback
-      )
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'training_data',
+        filter: `user_id=eq.${userId}`
+      }, callback)
       .subscribe();
   }
 }
 
-// Globale Supabase Instanz
-window.supabaseClient = new SupabaseClient();
+// Globale Instanz erstellen
+window.SupabaseClient = SupabaseClient;

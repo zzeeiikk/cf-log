@@ -54,6 +54,9 @@ async function loadAllModules() {
       await loadModule(module);
     }
     
+    // Cloud-Konfiguration dynamisch laden
+    await loadCloudConfig();
+    
     // EmailJS Konfiguration laden
     await loadEmailJSConfig();
     

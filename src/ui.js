@@ -134,6 +134,7 @@ function renderOnboarding() {
             </div>
           </div>
   
+
           <!-- Cloud Login Form -->
           <div id="cloud-form" class="storage-form hidden">
             <div class="mb-6 mt-6 p-4 bg-purple-50 rounded-lg">
@@ -159,9 +160,7 @@ function renderOnboarding() {
             </form>
             
             <form id="cloud-register-form" class="space-y-4 mb-6 hidden">
-              <input type="text" name="name" placeholder="Name" required 
-                     class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
-              <input type="email" name="email" placeholder="E-Mail" required 
+              <input type="text" name="email" placeholder="E-Mail" required 
                      class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
               <input type="password" name="password" placeholder="Passwort" required 
                      class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
@@ -267,7 +266,6 @@ function renderOnboarding() {
       }
     };
   
-<<<<<<< Updated upstream
     // Cloud Form Toggle
     document.getElementById('toggle-cloud-form').onclick = () => {
       const loginForm = document.getElementById('cloud-login-form');
@@ -396,8 +394,6 @@ function renderOnboarding() {
       }
     };
     
-=======
->>>>>>> Stashed changes
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const gistId = e.target.gist_id.value.trim();
