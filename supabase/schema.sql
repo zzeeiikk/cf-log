@@ -1,8 +1,7 @@
 -- cf-log Cloud Version Database Schema
 -- Für Supabase PostgreSQL
 
--- Enable Row Level Security
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
+-- Row Level Security wird automatisch von Supabase gehandhabt
 
 -- User Profiles Table
 CREATE TABLE IF NOT EXISTS user_profiles (

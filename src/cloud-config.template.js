@@ -1,12 +1,12 @@
-// Cloud Version Konfiguration für cf-log
-// Diese Datei enthält alle Einstellungen für die Cloud-Version
+// Cloud Version Konfiguration Template für cf-log
+// Kopiere diese Datei zu cloud-config.js und setze deine echten Keys ein
 
 const CLOUD_CONFIG = {
   // Supabase Konfiguration
   supabase: {
     // Diese Werte müssen in der Produktion gesetzt werden
-    url: https://hslvpyclrnhubtatnjhp.supabase.co, // 'https://your-project.supabase.co'
-    anonKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHZweWNscm5odWJ0YXRuamhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDcwMjMsImV4cCI6MjA3MDk4MzAyM30.TOItcRqspdrzeQ36bJ4VrF1oJm3565LxnZJEDAZU_Ho, // 'your-anon-key'
+    url: 'https://your-project.supabase.co', // Deine Supabase Project URL
+    anonKey: 'your-anon-key', // Dein Supabase anon public key
   },
 
   // Feature Flags
@@ -72,11 +72,11 @@ const CLOUD_CONFIG = {
 
   // Stripe Konfiguration (für später)
   stripe: {
-    publishableKey: null, // 'pk_test_...'
+    publishableKey: 'pk_test_...', // Dein Stripe publishable key
     priceIds: {
-      pro: null, // 'price_...'
+      pro: 'price_...', // Deine Stripe price ID für Pro-Plan
       // Weitere Pläne können später hinzugefügt werden:
-      // team: null, // 'price_...'
+      // team: 'price_...',
     }
   }
 };

@@ -16,7 +16,7 @@ const MODULES = [
   'data.js',
   'ui.js',
   // Cloud Version Module (werden nur geladen wenn Cloud-Speicherung aktiviert ist)
-  'cloud-config.js',
+  'cloud-config.template.js', // Template wird geladen, echte Konfiguration muss separat erstellt werden
   'supabase.js',
   'auth-ui.js',
   'cloud-storage.js'
