@@ -60,6 +60,15 @@ class CloudStorage {
     }
   }
 
+  // Kompatibilität mit bestehender Storage-API
+  async load() {
+    return await this.loadData();
+  }
+
+  async save(data) {
+    return await this.saveData(data);
+  }
+
   // Daten in Cloud speichern
   async saveToCloud(data) {
     try {
@@ -87,10 +96,40 @@ class CloudStorage {
     try {
       const data = await window.supabaseClient.getTrainingData(this.currentUser.id);
       console.log('Daten aus Cloud geladen');
+      
+      // Falls keine Daten vorhanden sind, Standard-Daten zurückgeben
+      if (!data) {
+        console.log('Keine Trainingsdaten in Cloud gefunden, verwende Standard-Daten');
+        return {
+          user: {
+            name: this.currentUser.email,
+            created: new Date().toISOString()
+          },
+          exercises: [],
+          settings: {
+            defaultExercises: ["Bankdrücken", "Kniebeugen", "Klimmzüge"],
+            theme: "light"
+          }
+        };
+      }
+      
       return data;
     } catch (error) {
       console.error('Fehler beim Laden aus Cloud:', error);
-      throw error;
+      
+      // Bei Fehlern (z.B. keine Daten vorhanden) Standard-Daten zurückgeben
+      console.log('Verwende Standard-Daten aufgrund von Fehler');
+      return {
+        user: {
+          name: this.currentUser.email,
+          created: new Date().toISOString()
+        },
+        exercises: [],
+        settings: {
+          defaultExercises: ["Bankdrücken", "Kniebeugen", "Klimmzüge"],
+          theme: "light"
+        }
+      };
     }
   }
 

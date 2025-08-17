@@ -5,8 +5,8 @@ const CLOUD_CONFIG = {
   // Supabase Konfiguration
   supabase: {
     // Diese Werte müssen in der Produktion gesetzt werden
-    url: https://hslvpyclrnhubtatnjhp.supabase.co, // 'https://your-project.supabase.co'
-    anonKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHZweWNscm5odWJ0YXRuamhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDcwMjMsImV4cCI6MjA3MDk4MzAyM30.TOItcRqspdrzeQ36bJ4VrF1oJm3565LxnZJEDAZU_Ho, // 'your-anon-key'
+    url: 'https://hslvpyclrnhubtatnjhp.supabase.co', // 'https://your-project.supabase.co'
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzbHZweWNscm5odWJ0YXRuamhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU0MDcwMjMsImV4cCI6MjA3MDk4MzAyM30.TOItcRqspdrzeQ36bJ4VrF1oJm3565LxnZJEDAZU_Ho', // 'your-anon-key'
   },
 
   // Feature Flags

@@ -137,29 +137,45 @@ function renderOnboarding() {
           <!-- Cloud Login Form -->
           <div id="cloud-form" class="storage-form hidden">
             <div class="mb-6 mt-6 p-4 bg-purple-50 rounded-lg">
-              <h3 class="font-semibold text-purple-900 mb-3">☁️ Cloud-Version</h3>
-              <p class="text-sm text-purple-800 mb-4">Teste die Cloud-Version mit automatischer Synchronisation:</p>
-              
-              <!-- Quick Test Login -->
-              <div class="space-y-4">
-                <div class="flex gap-2">
-                  <button type="button" id="cloud-login-test" 
-                          class="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
-                    🧪 Test Login
-                  </button>
-                  <button type="button" id="cloud-register-test" 
-                          class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
-                    📝 Test Register
-                  </button>
-                </div>
-                
-                <div class="text-xs text-purple-700 bg-purple-100 p-3 rounded-lg">
-                  <strong>Test-Daten:</strong><br>
-                  E-Mail: test@cf-log.com<br>
-                  Passwort: test123<br>
-                  Name: Test User
-                </div>
-              </div>
+              <h3 class="font-semibold text-purple-900 mb-3">Cloud-Version Features:</h3>
+              <ul class="text-sm text-purple-800 space-y-1">
+                <li>• Automatische Synchronisation zwischen Geräten</li>
+                <li>• Realtime-Updates</li>
+                <li>• Erweiterte Statistiken</li>
+                <li>• CSV-Export</li>
+                <li>• Automatische Backups</li>
+              </ul>
+            </div>
+            
+            <form id="cloud-login-form" class="space-y-4 mb-6">
+              <input type="email" name="email" placeholder="E-Mail" required 
+                     class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <input type="password" name="password" placeholder="Passwort" required 
+                     class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <button type="submit" 
+                      class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+                Anmelden
+              </button>
+            </form>
+            
+            <form id="cloud-register-form" class="space-y-4 mb-6">
+              <input type="text" name="name" placeholder="Name" required 
+                     class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <input type="email" name="email" placeholder="E-Mail" required 
+                     class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <input type="password" name="password" placeholder="Passwort" required 
+                     class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <button type="submit" 
+                      class="w-full bg-purple-500 hover:bg-purple-600 text-white py-3 rounded-xl font-semibold text-lg transition-colors">
+                Registrieren
+              </button>
+            </form>
+            
+            <div class="text-center">
+              <button type="button" id="toggle-cloud-form" 
+                      class="text-purple-600 hover:text-purple-800 text-sm">
+                Bereits ein Konto? Anmelden
+              </button>
             </div>
           </div>
   
@@ -226,6 +242,9 @@ function renderOnboarding() {
           document.getElementById('webdav-form').classList.remove('hidden');
         } else if (type === 'cloud') {
           document.getElementById('cloud-form').classList.remove('hidden');
+          // Standardmäßig Login-Formular anzeigen
+          document.getElementById('cloud-login-form').classList.remove('hidden');
+          document.getElementById('cloud-register-form').classList.add('hidden');
         }
       });
     });
@@ -250,6 +269,101 @@ function renderOnboarding() {
       }
     };
   
+    // Cloud Form Toggle
+    document.getElementById('toggle-cloud-form').onclick = () => {
+      const loginForm = document.getElementById('cloud-login-form');
+      const registerForm = document.getElementById('cloud-register-form');
+      const toggleBtn = document.getElementById('toggle-cloud-form');
+      
+      if (loginForm.classList.contains('hidden')) {
+        // Zu Login wechseln
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        toggleBtn.textContent = 'Bereits ein Konto? Anmelden';
+      } else {
+        // Zu Registrierung wechseln
+        loginForm.classList.add('hidden');
+        registerForm.classList.remove('hidden');
+        toggleBtn.textContent = 'Noch kein Konto? Registrieren';
+      }
+    };
+    
+    // Cloud Login
+    document.getElementById('cloud-login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = e.target.email.value.trim();
+      const password = e.target.password.value.trim();
+      
+      if (!email || !password) return;
+      
+      try {
+        // Cloud-Modus aktivieren falls noch nicht aktiv
+        if (window.cloudStorage && !window.cloudStorage.isCloudMode) {
+          await window.cloudStorage.enableCloudMode(
+            window.CLOUD_CONFIG.supabase.url,
+            window.CLOUD_CONFIG.supabase.anonKey
+          );
+        }
+        
+        // Login über Supabase
+        await window.supabaseClient.signIn(email, password);
+        
+        // User-Daten laden
+        await window.authUI.loadUserData();
+        
+        // Zur Dashboard wechseln
+        localStorage.setItem('cf_log_storage_type', 'cloud');
+        window.location.reload();
+        
+      } catch (err) {
+        showNotification('Login fehlgeschlagen: ' + err.message, 'error');
+      }
+    };
+    
+    // Cloud Register
+    document.getElementById('cloud-register-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const name = e.target.name.value.trim();
+      const email = e.target.email.value.trim();
+      const password = e.target.password.value.trim();
+      
+      if (!name || !email || !password) return;
+      
+      try {
+        // Cloud-Modus aktivieren falls noch nicht aktiv
+        if (window.cloudStorage && !window.cloudStorage.isCloudMode) {
+          await window.cloudStorage.enableCloudMode(
+            window.CLOUD_CONFIG.supabase.url,
+            window.CLOUD_CONFIG.supabase.anonKey
+          );
+        }
+        
+        // Registrierung über Supabase
+        await window.supabaseClient.signUp(email, password);
+        
+        // User Profile erstellen
+        const currentUser = await window.supabaseClient.getCurrentUser();
+        if (currentUser) {
+          await window.supabaseClient.saveUserProfile(currentUser.id, {
+            name: name,
+            created: new Date().toISOString(),
+            settings: {}
+          });
+        }
+        
+        // User-Daten laden
+        await window.authUI.loadUserData();
+        
+        // Zur Dashboard wechseln
+        localStorage.setItem('cf_log_storage_type', 'cloud');
+        localStorage.setItem('cf_log_user_name', name);
+        window.location.reload();
+        
+      } catch (err) {
+        showNotification('Registrierung fehlgeschlagen: ' + err.message, 'error');
+      }
+    };
+    
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const gistId = e.target.gist_id.value.trim();
@@ -318,47 +432,6 @@ function renderOnboarding() {
       }
     };
   
-    // Cloud Event Listeners
-    document.getElementById('cloud-login-test').onclick = async () => {
-      try {
-        if (!window.authUI) {
-          throw new Error('Cloud-Features nicht verfügbar');
-        }
-        
-        // Test-Login mit vordefinierten Daten
-        await window.authUI.login('test@cf-log.com', 'test123');
-        
-        // Cloud-Modus aktivieren
-        localStorage.setItem('cf_log_storage_type', 'cloud');
-        localStorage.setItem('cf_log_user_name', 'Test User');
-        
-        showNotification('Cloud-Login erfolgreich!', 'success');
-        window.location.reload();
-      } catch (err) {
-        showNotification('Cloud-Login Fehler: ' + err.message, 'error');
-      }
-    };
-    
-    document.getElementById('cloud-register-test').onclick = async () => {
-      try {
-        if (!window.authUI) {
-          throw new Error('Cloud-Features nicht verfügbar');
-        }
-        
-        // Test-Registrierung mit vordefinierten Daten
-        await window.authUI.register('test@cf-log.com', 'test123', 'Test User');
-        
-        // Cloud-Modus aktivieren
-        localStorage.setItem('cf_log_storage_type', 'cloud');
-        localStorage.setItem('cf_log_user_name', 'Test User');
-        
-        showNotification('Cloud-Registrierung erfolgreich!', 'success');
-        window.location.reload();
-      } catch (err) {
-        showNotification('Cloud-Registrierung Fehler: ' + err.message, 'error');
-      }
-    };
-    
     // Demo Button Event Listener
     document.getElementById('demo-btn').onclick = async () => {
       try {
@@ -2644,6 +2717,24 @@ function renderOnboarding() {
       return;
     }
     
+    // Cloud-Logout behandeln
+    if (storageType === 'cloud') {
+      if (confirm('Möchtest du dich wirklich abmelden?')) {
+        // Supabase Logout
+        if (window.supabaseClient) {
+          window.supabaseClient.signOut();
+        }
+        
+        // Cloud-Daten löschen
+        localStorage.removeItem('cf_log_storage_type');
+        localStorage.removeItem('cf_log_user_name');
+        
+        // Zurück zur Onboarding-Seite
+        window.location.reload();
+      }
+      return;
+    }
+    
     let message = 'Möchtest du dich wirklich abmelden?\n\n';
     message += '⚠️ Wichtiger Hinweis:\n';
     message += 'Speichere dir deine Login-Daten:\n';
@@ -2708,6 +2799,10 @@ function renderOnboarding() {
             console.log('User bereits eingeloggt:', currentUser.email);
             // User-Daten laden
             await window.authUI.loadUserData();
+            
+            // Cloud-Storage als aktiv setzen
+            localStorage.setItem('cf_log_storage_type', 'cloud');
+            localStorage.setItem('cf_log_user_name', currentUser.email);
           }
         } else {
           console.warn('Cloud-Modus konnte nicht aktiviert werden');
@@ -2722,7 +2817,6 @@ function renderOnboarding() {
   
   // Main function
   async function main() {
-    const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
     const demoMode = localStorage.getItem('cf_log_demo_mode');
     
     // Demo-Modus prüfen
@@ -2735,13 +2829,19 @@ function renderOnboarding() {
     // Cloud-Modus initialisieren (falls verfügbar)
     await initCloudMode();
     
+    // Storage Type nach Cloud-Initialisierung prüfen
+    const storageType = localStorage.getItem('cf_log_storage_type') || 'github';
+    
     // Storage Provider initialisieren
     try {
+      console.log('Storage Type:', storageType);
+      
       if (storageType === 'github') {
         const token = localStorage.getItem('cf_log_token');
         const gistId = localStorage.getItem('cf_log_gist_id');
     
     if (!token || !gistId) {
+      console.log('GitHub Token oder Gist ID fehlt, zeige Onboarding');
       renderOnboarding();
       return;
     }
@@ -2754,23 +2854,40 @@ function renderOnboarding() {
         const filename = localStorage.getItem('cf_log_webdav_filename') || FILE_NAME;
         
         if (!url || !username || !password) {
+          console.log('WebDAV Daten fehlen, zeige Onboarding');
           renderOnboarding();
           return;
         }
         
         currentStorageProvider = new WebDAVProvider(url, username, password, filename);
+      } else if (storageType === 'cloud') {
+        console.log('Cloud-Storage wird verwendet');
+        // Cloud-Storage verwenden
+        if (window.cloudStorage && window.cloudStorage.isCloudMode) {
+          console.log('Cloud Storage ist verfügbar und aktiv');
+          currentStorageProvider = window.cloudStorage;
+        } else {
+          console.log('Cloud Storage nicht verfügbar, zeige Onboarding');
+          renderOnboarding();
+          return;
+        }
       } else {
+        console.log('Unbekannter Storage Type, zeige Onboarding');
         renderOnboarding();
         return;
       }
       
+      console.log('Daten werden geladen...');
       // Daten laden
       const data = await currentStorageProvider.load();
+      console.log('Daten geladen:', data);
       appData = { ...appData, ...data };
+      console.log('Dashboard wird gerendert...');
       renderDashboard();
       // Show PWA install prompt after successful login
       showInstallPromptAfterLogin();
     } catch (err) {
+      console.error('Fehler beim Laden:', err);
       showNotification('Fehler beim Laden: ' + err.message, 'error');
       logout();
     }
