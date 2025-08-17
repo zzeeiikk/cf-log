@@ -100,17 +100,7 @@ class CloudStorage {
       // Falls keine Daten vorhanden sind, Standard-Daten zurückgeben
       if (!data) {
         console.log('Keine Trainingsdaten in Cloud gefunden, verwende Standard-Daten');
-        return {
-          user: {
-            name: this.currentUser.email,
-            created: new Date().toISOString()
-          },
-          exercises: [],
-          settings: {
-            defaultExercises: ["Bankdrücken", "Kniebeugen", "Klimmzüge"],
-            theme: "light"
-          }
-        };
+        return this.getDefaultDataStructure();
       }
       
       return data;
@@ -119,17 +109,7 @@ class CloudStorage {
       
       // Bei Fehlern (z.B. keine Daten vorhanden) Standard-Daten zurückgeben
       console.log('Verwende Standard-Daten aufgrund von Fehler');
-      return {
-        user: {
-          name: this.currentUser.email,
-          created: new Date().toISOString()
-        },
-        exercises: [],
-        settings: {
-          defaultExercises: ["Bankdrücken", "Kniebeugen", "Klimmzüge"],
-          theme: "light"
-        }
-      };
+      return this.getDefaultDataStructure();
     }
   }
 
@@ -204,6 +184,69 @@ class CloudStorage {
     } catch (error) {
       console.error('Fehler beim Laden des Subscription Status:', error);
     }
+  }
+
+  // Standard-Datenstruktur aus data.js laden
+  getDefaultDataStructure() {
+    // Versuche die Standard-Daten aus data.js zu laden
+    if (window.appData) {
+      return {
+        user: {
+          name: this.currentUser?.email || '',
+          created: new Date().toISOString().split('T')[0] // Konsistent mit data.js
+        },
+        exercises: [],
+        settings: {
+          defaultExercises: window.appData.settings?.defaultExercises || this.getDefaultExercises(),
+          theme: window.appData.settings?.theme || 'light'
+        }
+      };
+    }
+    
+    // Fallback falls data.js noch nicht geladen ist
+    return {
+      user: {
+        name: this.currentUser?.email || '',
+        created: new Date().toISOString().split('T')[0]
+      },
+      exercises: [],
+      settings: {
+        defaultExercises: this.getDefaultExercises(),
+        theme: 'light'
+      }
+    };
+  }
+
+  // Standardübungen aus data.js laden
+  getDefaultExercises() {
+    // Versuche die Standardübungen aus data.js zu laden
+    if (window.appData && window.appData.settings && window.appData.settings.defaultExercises) {
+      return window.appData.settings.defaultExercises;
+    }
+    
+    // Fallback falls data.js noch nicht geladen ist
+    return [
+      "Deadlift",
+      "Squat", 
+      "Clean and Jerk",
+      "Snatch",
+      "Strict Press",
+      "Power Clean",
+      "Thruster",
+      "Pull-ups",
+      "Toes-to-Bar",
+      "Muscle-ups",
+      "Handstand Push-ups",
+      "Push-ups",
+      "Burpees",
+      "Dips",
+      "Rope Jumps",
+      "Sit-ups",
+      "Air Squat",
+      "Front Squat",
+      "Back Squat",
+      "Squat Cleans"
+    ];
   }
 
   // Realtime Sync aktivieren

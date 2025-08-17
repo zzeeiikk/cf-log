@@ -33,8 +33,7 @@ class SupabaseClient {
       password
     });
     
-    if (error) throw error;
-    return data;
+    return { data, error };
   }
 
   async signIn(email, password) {
@@ -45,8 +44,7 @@ class SupabaseClient {
       password
     });
     
-    if (error) throw error;
-    return data;
+    return { data, error };
   }
 
   async signOut() {

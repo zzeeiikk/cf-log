@@ -306,7 +306,12 @@ function renderOnboarding() {
         }
         
         // Login über Supabase
-        await window.supabaseClient.signIn(email, password);
+        const result = await window.supabaseClient.signIn(email, password);
+        
+        if (result.error) {
+          showNotification('Login fehlgeschlagen: ' + result.error.message, 'error');
+          return;
+        }
         
         // User-Daten laden
         await window.authUI.loadUserData();
@@ -341,8 +346,15 @@ function renderOnboarding() {
         // Registrierung über Supabase
         const { data, error } = await window.supabaseClient.signUp(email, password);
         
+        console.log('Registrierung Response:', { data, error });
+        
         if (error) {
-          showNotification('Registrierung fehlgeschlagen: ' + error.message, 'error');
+          // Rate-Limiting-Fehler behandeln
+          if (error.message.includes('security purposes') || error.message.includes('rate limit')) {
+            showNotification('Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.', 'error');
+          } else {
+            showNotification('Registrierung fehlgeschlagen: ' + error.message, 'error');
+          }
           return;
         }
         
