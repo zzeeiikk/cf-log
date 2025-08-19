@@ -2,7 +2,7 @@
   "name": "cf-log - Flexibles Trainingslog",
   "short_name": "cf-log",
   "description": "Dein flexibles Trainingslog mit GitHub Gists. Kein Backend, keine Anmeldung nötig.",
-  "start_url": "/cf-log",
+  "start_url": "/app.html",
   "display": "standalone",
   "background_color": "#F2F2F7",
   "theme_color": "#FFFFFF",

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - cf-log</title>
+    <meta name="description" content="Häufig gestellte Fragen zu cf-log - Dein intelligentes Trainingslog">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data/cf-log.jpg">
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <img src="data/cf-log.jpg" alt="cf-log Logo" class="h-8 w-8 rounded mr-3">
+                        <span class="text-xl font-bold text-gray-900">cf-log</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Startseite</a>
+                    <a href="app.html" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Zur App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="bg-white py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                Häufig gestellte Fragen
+            </h1>
+            <p class="text-xl text-gray-600">
+                Finde schnell Antworten auf die wichtigsten Fragen zu cf-log
+            </p>
+        </div>
+    </section>
+
+    <!-- FAQ Content -->
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="space-y-8">
+                <!-- FAQ Category: Allgemein -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Allgemein</h2>
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Was ist cf-log?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">cf-log ist ein intelligentes Trainingslog, das dir hilft, deine Workouts zu dokumentieren und zu analysieren. Die App bietet sichere Cloud-Speicherung, automatische Synchronisation und erweiterte Statistiken.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Ist cf-log kostenlos?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">Ja, cf-log ist vollständig kostenlos! Du kannst alle Features nutzen, ohne etwas zu bezahlen. Wir bieten verschiedene Speichermethoden an, von kostenlosen GitHub Gists bis hin zu eigenen WebDAV-Servern.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Welche Sportarten unterstützt cf-log?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">cf-log ist für alle Sportarten geeignet, bei denen du Übungen, Sätze, Wiederholungen und Gewichte dokumentieren möchtest. Besonders beliebt ist es für Krafttraining, CrossFit, Bodybuilding und Fitness.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Category: Speicherung -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Speicherung & Synchronisation</h2>
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Wie funktioniert die GitHub Gists Speicherung?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">GitHub Gists sind kleine Code-Snippets, die perfekt für die Speicherung von Trainingsdaten geeignet sind. Du benötigst nur einen kostenlosen GitHub-Account. Deine Daten werden automatisch synchronisiert und sind von überall aus zugänglich.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Kann ich meine Daten exportieren?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">Ja! Du kannst deine Trainingsdaten jederzeit als CSV-Datei exportieren. So kannst du deine Daten in Excel, Google Sheets oder anderen Analyse-Tools weiterverarbeiten.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Sind meine Daten sicher?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">Absolut! Deine Daten werden verschlüsselt übertragen und gespeichert. Bei GitHub Gists hast du volle Kontrolle über deine Daten, und bei WebDAV werden sie auf deinem eigenen Server gespeichert.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Category: Features -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Features & Funktionen</h2>
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Welche Statistiken bietet cf-log?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">cf-log bietet umfangreiche Statistiken: Trainingshäufigkeit, Gewichtsverlauf, Volumen-Analysen, persönliche Bestleistungen, Übungsstatistiken und vieles mehr. Alle Daten werden in übersichtlichen Grafiken dargestellt.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Funktioniert cf-log auf dem Handy?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">Ja! cf-log ist vollständig mobil optimiert und funktioniert perfekt auf Smartphones und Tablets. Du kannst die App auch als PWA (Progressive Web App) installieren und offline nutzen.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Kann ich mit anderen trainieren?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">Das ist eine geplante Funktion! Bald wirst du Trainingspläne teilen, mit Freunden trainieren und deren Fortschritte verfolgen können. Bleib auf dem Laufenden und trage dich in unsere Benachrichtigungsliste ein!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Category: Technisches -->
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Technisches</h2>
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Welche Browser werden unterstützt?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">cf-log funktioniert in allen modernen Browsern: Chrome, Firefox, Safari, Edge und Opera. Für die beste Erfahrung empfehlen wir die neueste Version deines Browsers.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Was ist eine PWA?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">PWA steht für Progressive Web App. Das bedeutet, du kannst cf-log wie eine normale App auf deinem Handy installieren. Du bekommst ein App-Icon, kannst offline trainieren und erhältst Push-Benachrichtigungen.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 transition-colors">
+                                <span class="font-medium text-gray-900">Wie kann ich cf-log installieren?</span>
+                                <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div class="faq-content hidden px-6 pb-4">
+                                <p class="text-gray-600">Öffne cf-log in Chrome oder Safari auf deinem Handy. Du siehst dann eine Benachrichtigung "Zum Startbildschirm hinzufügen" oder ein Installationssymbol. Tippe darauf und cf-log wird wie eine App installiert.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="mt-16 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-8 text-center">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Hast du weitere Fragen?</h3>
+                <p class="text-gray-600 mb-6">
+                    Falls du hier keine Antwort gefunden hast, kontaktiere uns gerne!
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:mail@cf-log.de" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        E-Mail senden
+                    </a>
+                    <a href="hilfe.html" class="border-2 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        Hilfe-Seite
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <img src="data/cf-log.jpg" alt="cf-log Logo" class="h-8 w-8 rounded mr-3">
+                        <span class="text-xl font-bold">cf-log</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Dein intelligentes Trainingslog in der Cloud.
+                    </p>
+                    <br>
+                    <a class="text-gray-400" href="mailto:mail@cf-log.de">mail@cf-log.de</a>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Produkt</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html#features" class="hover:text-white">Features</a></li>
+                        <li><a href="app.html" class="hover:text-white">App</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Support</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="faq.html" class="hover:text-white">FAQ</a></li>
+                        <li><a href="hilfe.html" class="hover:text-white">Hilfe</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Rechtliches</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="datenschutz.html" class="hover:text-white">Datenschutz</a></li>
+                        <li><a href="impressum.html" class="hover:text-white">Impressum</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 cf-log • Alle Rechte vorbehalten.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // FAQ Toggle functionality
+        document.querySelectorAll('.faq-toggle').forEach(button => {
+            button.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('svg');
+                
+                // Toggle content
+                content.classList.toggle('hidden');
+                
+                // Rotate icon
+                if (content.classList.contains('hidden')) {
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

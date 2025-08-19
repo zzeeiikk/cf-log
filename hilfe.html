@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hilfe - cf-log</title>
+    <meta name="description" content="Hilfe und Anleitungen für cf-log - Dein intelligentes Trainingslog">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data/cf-log.jpg">
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .step-number {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="flex items-center">
+                        <img src="data/cf-log.jpg" alt="cf-log Logo" class="h-8 w-8 rounded mr-3">
+                        <span class="text-xl font-bold text-gray-900">cf-log</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium">Startseite</a>
+                    <a href="app.html" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Zur App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="bg-white py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                Hilfe & Anleitungen
+            </h1>
+            <p class="text-xl text-gray-600">
+                Hier findest du alles, was du für den Start mit cf-log brauchst
+            </p>
+        </div>
+    </section>
+
+    <!-- Quick Navigation -->
+    <section class="py-8 bg-gray-100">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#getting-started" class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900">
+                    Erste Schritte
+                </a>
+                <a href="#storage-setup" class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900">
+                    Speicher einrichten
+                </a>
+                <a href="#training-log" class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900">
+                    Training dokumentieren
+                </a>
+                <a href="#statistics" class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900">
+                    Statistiken nutzen
+                </a>
+                <a href="#mobile" class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900">
+                    Mobile Nutzung
+                </a>
+                <a href="#troubleshooting" class="bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900">
+                    Probleme lösen
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help Content -->
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="space-y-16">
+                <!-- Getting Started -->
+                <div id="getting-started">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Erste Schritte</h2>
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="step-number w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-1">
+                                    1
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">App öffnen</h3>
+                                    <p class="text-gray-600 mb-4">Öffne cf-log in deinem Browser unter <a href="app.html" class="text-purple-500 hover:text-purple-600 font-medium">app.html</a> oder klicke auf "Zur App" in der Navigation.</p>
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <p class="text-sm text-gray-700"><strong>Tipp:</strong> Für die beste Erfahrung empfehlen wir Chrome, Firefox oder Safari.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="step-number w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-1">
+                                    2
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Speichermethode wählen</h3>
+                                    <p class="text-gray-600 mb-4">Wähle eine Speichermethode aus: GitHub Gists (kostenlos) oder WebDAV (eigener Server).</p>
+                                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+                                        <p class="text-sm text-blue-700"><strong>Empfehlung für Anfänger:</strong> Starte mit GitHub Gists - das ist kostenlos und einfach einzurichten.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="step-number w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 mt-1">
+                                    3
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-gray-900 mb-2">Erstes Training eintragen</h3>
+                                    <p class="text-gray-600 mb-4">Trage dein erstes Training ein. Du kannst Übungen hinzufügen, Sätze und Wiederholungen dokumentieren.</p>
+                                    <div class="bg-green-50 border-l-4 border-green-400 p-4">
+                                        <p class="text-sm text-green-700"><strong>Los geht's:</strong> Klicke auf "Neues Training" und beginne mit deiner ersten Übung!</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Storage Setup -->
+                <div id="storage-setup">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Speicher einrichten</h2>
+                    
+                    <!-- GitHub Gists -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 text-blue-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                            GitHub Gists (Kostenlos)
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-blue-600 text-xs font-bold">1</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700">Erstelle einen kostenlosen GitHub-Account unter <a href="https://github.com" target="_blank" class="text-blue-500 hover:text-blue-600">github.com</a></p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-blue-600 text-xs font-bold">2</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700">Gehe zu den Einstellungen und erstelle ein Personal Access Token</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-blue-600 text-xs font-bold">3</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700">Gib deinen GitHub-Benutzernamen und das Token in cf-log ein</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                            <p class="text-sm text-blue-700"><strong>Vorteile:</strong> Kostenlos, automatische Backups, Versionierung, von überall zugänglich</p>
+                        </div>
+                    </div>
+
+                    <!-- WebDAV -->
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 text-green-500 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            WebDAV (Eigener Server)
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-green-600 text-xs font-bold">1</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700">Richte einen WebDAV-Server ein (Nextcloud, ownCloud, NAS-System)</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-green-600 text-xs font-bold">2</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700">Erstelle einen Ordner für deine Trainingsdaten</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-green-600 text-xs font-bold">3</span>
+                                </div>
+                                <div>
+                                    <p class="text-gray-700">Gib die WebDAV-URL, Benutzername und Passwort in cf-log ein</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 bg-green-50 rounded-lg">
+                            <p class="text-sm text-green-700"><strong>Vorteile:</strong> Volle Kontrolle, unbegrenzter Speicherplatz, eigene Infrastruktur</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Training Log -->
+                <div id="training-log">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Training dokumentieren</h2>
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Neues Training erstellen</h3>
+                            <div class="space-y-3">
+                                <p class="text-gray-600">1. Klicke auf "Neues Training"</p>
+                                <p class="text-gray-600">2. Wähle das Datum (Standard: heute)</p>
+                                <p class="text-gray-600">3. Füge einen Titel hinzu (z.B. "Push-Training")</p>
+                                <p class="text-gray-600">4. Klicke auf "Training erstellen"</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Übungen hinzufügen</h3>
+                            <div class="space-y-3">
+                                <p class="text-gray-600">1. Klicke auf "Übung hinzufügen"</p>
+                                <p class="text-gray-600">2. Wähle eine Übung aus der Liste oder erstelle eine neue</p>
+                                <p class="text-gray-600">3. Trage Sätze, Wiederholungen und Gewichte ein</p>
+                                <p class="text-gray-600">4. Füge Notizen hinzu (optional)</p>
+                                <p class="text-gray-600">5. Klicke auf "Speichern"</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Training bearbeiten</h3>
+                            <div class="space-y-3">
+                                <p class="text-gray-600">• Klicke auf ein Training in der Liste, um es zu bearbeiten</p>
+                                <p class="text-gray-600">• Du kannst Übungen hinzufügen, löschen oder bearbeiten</p>
+                                <p class="text-gray-600">• Änderungen werden automatisch gespeichert</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div id="statistics">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Statistiken nutzen</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Übungsstatistiken</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>• Gewichtsverlauf über Zeit</li>
+                                <li>• Persönliche Bestleistungen</li>
+                                <li>• Trainingshäufigkeit</li>
+                                <li>• Volumen-Analysen</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Allgemeine Statistiken</h3>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>• Trainingskalender</li>
+                                <li>• Wöchentliche/monatliche Übersichten</li>
+                                <li>• Trainingsdauer</li>
+                                <li>• Übungsverteilung</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Daten exportieren</h3>
+                        <p class="text-gray-600 mb-4">Du kannst deine Trainingsdaten als CSV-Datei exportieren:</p>
+                        <div class="space-y-2 text-gray-600">
+                            <p>1. Gehe zu den Einstellungen</p>
+                            <p>2. Klicke auf "Daten exportieren"</p>
+                            <p>3. Wähle den Zeitraum aus</p>
+                            <p>4. Die CSV-Datei wird automatisch heruntergeladen</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile Usage -->
+                <div id="mobile">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Mobile Nutzung</h2>
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Als App installieren</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <span class="text-purple-600 text-xs font-bold">1</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-700">Öffne cf-log in Chrome oder Safari auf deinem Handy</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <span class="text-purple-600 text-xs font-bold">2</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-700">Tippe auf das Teilen-Symbol (Safari) oder das Menü (Chrome)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <span class="text-purple-600 text-xs font-bold">3</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-700">Wähle "Zum Startbildschirm hinzufügen"</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Offline-Nutzung</h3>
+                            <p class="text-gray-600 mb-4">cf-log funktioniert auch offline:</p>
+                            <ul class="space-y-2 text-gray-600">
+                                <li>• Trainings eintragen ohne Internetverbindung</li>
+                                <li>• Daten werden lokal gespeichert</li>
+                                <li>• Automatische Synchronisation bei Internetverbindung</li>
+                                <li>• Keine Datenverluste</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Troubleshooting -->
+                <div id="troubleshooting">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-8">Probleme lösen</h2>
+                    <div class="space-y-6">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Häufige Probleme</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-medium text-gray-900 mb-2">App lädt nicht</h4>
+                                    <p class="text-gray-600">• Überprüfe deine Internetverbindung</p>
+                                    <p class="text-gray-600">• Lade die Seite neu (F5)</p>
+                                    <p class="text-gray-600">• Lösche Browser-Cache</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900 mb-2">Synchronisation funktioniert nicht</h4>
+                                    <p class="text-gray-600">• Überprüfe deine Speicher-Einstellungen</p>
+                                    <p class="text-gray-600">• Stelle sicher, dass du online bist</p>
+                                    <p class="text-gray-600">• Versuche es später erneut</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900 mb-2">Daten verschwunden</h4>
+                                    <p class="text-gray-600">• Überprüfe deine Speicher-Einstellungen</p>
+                                    <p class="text-gray-600">• Stelle sicher, dass du mit dem richtigen Account verbunden bist</p>
+                                    <p class="text-gray-600">• Kontaktiere uns bei GitHub Gists-Problemen</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-4">Browser-Kompatibilität</h3>
+                            <div class="space-y-3">
+                                <p class="text-gray-600"><strong>Empfohlen:</strong> Chrome, Firefox, Safari, Edge (neueste Versionen)</p>
+                                <p class="text-gray-600"><strong>Nicht unterstützt:</strong> Internet Explorer</p>
+                                <p class="text-gray-600"><strong>PWA:</strong> Chrome, Safari (iOS), Edge</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Section -->
+            <div class="mt-16 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-8 text-center">
+                <h3 class="text-2xl font-bold text-gray-900 mb-4">Brauchst du weitere Hilfe?</h3>
+                <p class="text-gray-600 mb-6">
+                    Falls du hier keine Lösung gefunden hast, kontaktiere uns gerne!
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="mailto:mail@cf-log.de" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        E-Mail senden
+                    </a>
+                    <a href="faq.html" class="border-2 border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                        FAQ durchsuchen
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <img src="data/cf-log.jpg" alt="cf-log Logo" class="h-8 w-8 rounded mr-3">
+                        <span class="text-xl font-bold">cf-log</span>
+                    </div>
+                    <p class="text-gray-400">
+                        Dein intelligentes Trainingslog in der Cloud.
+                    </p>
+                    <br>
+                    <a class="text-gray-400" href="mailto:mail@cf-log.de">mail@cf-log.de</a>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Produkt</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html#features" class="hover:text-white">Features</a></li>
+                        <li><a href="app.html" class="hover:text-white">App</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Support</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="faq.html" class="hover:text-white">FAQ</a></li>
+                        <li><a href="hilfe.html" class="hover:text-white">Hilfe</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Rechtliches</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="datenschutz.html" class="hover:text-white">Datenschutz</a></li>
+                        <li><a href="impressum.html" class="hover:text-white">Impressum</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 cf-log • Alle Rechte vorbehalten.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Highlight current section in navigation
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('div[id]');
+            const navLinks = document.querySelectorAll('.bg-gray-100 a');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('bg-purple-500', 'text-white');
+                link.classList.add('bg-white', 'text-gray-700');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.remove('bg-white', 'text-gray-700');
+                    link.classList.add('bg-purple-500', 'text-white');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
