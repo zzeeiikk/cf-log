@@ -146,7 +146,7 @@ function renderOnboarding() {
                 <li>• Automatische Backups</li>
               </ul>
             </div>
-            
+
             <form id="cloud-login-form" class="space-y-4 mb-6">
               <input type="email" name="email" placeholder="E-Mail" required 
                      class="w-full border border-gray-300 p-3 rounded-xl text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
@@ -2881,8 +2881,11 @@ function renderOnboarding() {
               <br>• Automatische Synchronisation
               <br>• Zugriff von überall
             </p>
-            
+
             <!-- E-Mail-Anmeldung -->
+                        <div class="mb-6 mt-2 p-4 bg-purple-100 rounded-lg text-purple-900 text-center">
+              Trage dich <b>jetzt</b> in die Benachrichtigung ein, um als Erste:r informiert zu werden, sobald die Cloud-Version verfügbar ist.
+            </div>
             <form id="cloud-beta-form" class="space-y-4 mb-6">
               <input type="email" id="beta-email" placeholder="Deine E-Mail-Adresse" required 
                      class="w-full border border-gray-300 p-3 rounded-lg text-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
@@ -2893,8 +2896,8 @@ function renderOnboarding() {
             </form>
             
             <!-- Hinweis -->
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
-              <p class="text-sm text-purple-800">
+            <div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4 mb-6">
+              <p class="text-sm text-neutral-800">
                 <strong>Gratis:</strong> Du erhältst eine E-Mail, sobald die Cloud-Version verfügbar ist. 
                 Keine Spam, nur wichtige Updates!
               </p>
@@ -2905,9 +2908,7 @@ function renderOnboarding() {
               <button id="cloud-beta-close" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
                 Schließen
               </button>
-              <button id="cloud-beta-try-now" class="flex-1 bg-purple-500 hover:bg-purple-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
-                Jetzt testen (Demo)
-              </button>
+
             </div>
           </div>
         </div>

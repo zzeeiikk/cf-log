@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>cf-log - Flexibles Trainingslog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'apple-blue': '#007AFF',
+            'apple-gray': '#F2F2F7',
+            'apple-border': '#D1D1D6',
+            'apple-shadow': 'rgba(60,60,67,0.15)'
+          },
+          fontFamily: {
+            sans: [
+              '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'
+            ]
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="icon" href="data/cf-log.jpg?v=2" type="image/jpeg">
+  <link rel="shortcut icon" href="data/cf-log.jpg?v=2" type="image/jpeg">
+  <link rel="icon" type="image/jpeg" href="data/cf-log.jpg?v=2">
+  <meta name="description" content="Dein flexibles Trainingslog mit GitHub Gists. Kein Backend, keine Anmeldung nötig. Speichere deine Trainingsdaten sicher in JSON-Format." />
+  <!-- <meta name="theme-color" content="#007AFF"> -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="data/cf-log.jpg?v=2">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans antialiased">
+  <!-- Loading Spinner -->
+  <div id="loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+    <div class="text-center">
+      <img src="data/cf-log.jpg" alt="cf-log Logo" class="w-16 h-16 mx-auto mb-4 animate-bounce rounded-lg">
+      <div class="text-lg font-semibold text-gray-700">cf-log lädt...</div>
+    </div>
+  </div>
+
+  <div id="app" class="min-h-screen"></div>
+  
+  <!-- Scripts -->
+  <!-- Main application (loads all modules dynamically) -->
+  <script src="src/main.js"></script>
+  
+  <!-- Hide loading spinner when app is ready -->
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+      }, 500);
+    });
+  </script>
+</body>
+</html>
