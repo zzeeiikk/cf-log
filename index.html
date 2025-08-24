@@ -146,6 +146,29 @@
                 </p>
             </div>
             
+            <!-- App Screenshots -->
+            <div class="mb-16">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <img src="data/img/log-view.png" alt="cf-log Trainingslog Ansicht" class="w-full h-64 object-contain mb-4 cursor-pointer" onclick="openImageModal(this.src, 'Trainingslog')">
+                        <h3 class="text-lg font-semibold text-gray-900">Trainingslog</h3>
+                        <p class="text-gray-600">Übersichtliche Darstellung aller deiner Trainingseinheiten</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="flex justify-center mb-4">
+                            <img src="data/img/mobile-trainings-view.jpeg" alt="cf-log Mobile Ansicht" class="h-64 object-contain cursor-pointer shadow-xl" onclick="openImageModal(this.src, 'Mobile Ansicht', true)">
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Mobile Optimiert</h3>
+                        <p class="text-gray-600">Perfekt für das Training unterwegs</p>
+                    </div>
+                    <div class="text-center">
+                        <img src="data/img/stats-view.png" alt="cf-log Statistiken" class="w-full h-64 object-contain mb-4 cursor-pointer" onclick="openImageModal(this.src, 'Erweiterte Statistiken')">
+                        <h3 class="text-lg font-semibold text-gray-900">Erweiterte Statistiken</h3>
+                        <p class="text-gray-600">Detaillierte Analysen deiner Fortschritte</p>
+                    </div>
+                </div>
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Feature 1 -->
                 <div class="feature-card bg-white p-8 rounded-xl shadow-lg border border-gray-100">
@@ -439,6 +462,29 @@
         </div>
     </section>
 
+    <!-- Image Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden flex items-center justify-center p-4">
+        <div class="relative max-w-4xl max-h-full">
+            <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white text-4xl font-bold hover:text-gray-300 transition-colors z-10">
+                &times;
+            </button>
+            
+            <!-- Navigation Arrows -->
+            <button onclick="navigateImage(-1)" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white text-4xl font-bold hover:text-gray-300 transition-colors z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ‹
+            </button>
+            <button onclick="navigateImage(1)" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white text-4xl font-bold hover:text-gray-300 transition-colors z-10 bg-black bg-opacity-50 rounded-full w-12 h-12 flex items-center justify-center">
+                ›
+            </button>
+            
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg">
+            <h3 id="modalTitle" class="absolute bottom-4 left-4 text-white text-xl font-semibold bg-black bg-opacity-50 px-3 py-1 rounded"></h3>
+            
+            <!-- Image Counter -->
+            <div id="imageCounter" class="absolute top-4 left-4 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded"></div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="bg-gray-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -684,6 +730,86 @@
             if (window.EMAILJS_CONFIG && typeof emailjs !== 'undefined') {
                 emailjs.init(window.EMAILJS_CONFIG.publicKey);
                 console.log('EmailJS initialisiert');
+            }
+        });
+        
+        // Image Modal Functions
+        let currentImageIndex = 0;
+        const images = [
+            { src: 'data/img/log-view.png', title: 'Trainingslog', isMobile: false },
+            { src: 'data/img/mobile-trainings-view.jpeg', title: 'Mobile Ansicht', isMobile: true },
+            { src: 'data/img/stats-view.png', title: 'Erweiterte Statistiken', isMobile: false }
+        ];
+        
+        function openImageModal(imageSrc, title, isMobile = false) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const imageCounter = document.getElementById('imageCounter');
+            
+            // Finde den Index des aktuellen Bildes
+            currentImageIndex = images.findIndex(img => img.src === imageSrc);
+            
+            modalImage.src = imageSrc;
+            modalTitle.textContent = title;
+            
+            // Für mobile Screenshots: Vollhöhe anzeigen
+            if (isMobile) {
+                modalImage.className = 'max-w-full h-screen object-contain rounded-lg mx-auto';
+            } else {
+                modalImage.className = 'max-w-full max-h-full object-contain rounded-lg';
+            }
+            
+            // Update counter
+            imageCounter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+        
+        function navigateImage(direction) {
+            currentImageIndex = (currentImageIndex + direction + images.length) % images.length;
+            const image = images[currentImageIndex];
+            
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const imageCounter = document.getElementById('imageCounter');
+            
+            modalImage.src = image.src;
+            modalTitle.textContent = image.title;
+            
+            // Für mobile Screenshots: Vollhöhe anzeigen
+            if (image.isMobile) {
+                modalImage.className = 'max-w-full h-screen object-contain rounded-lg mx-auto';
+            } else {
+                modalImage.className = 'max-w-full max-h-full object-contain rounded-lg';
+            }
+            
+            // Update counter
+            imageCounter.textContent = `${currentImageIndex + 1} / ${images.length}`;
+        }
+        
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+        
+        // Close modal when clicking outside the image
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImageModal();
+            }
+        });
+        
+        // Close modal with Escape key and navigate with arrow keys
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeImageModal();
+            } else if (e.key === 'ArrowLeft') {
+                navigateImage(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigateImage(1);
             }
         });
         
