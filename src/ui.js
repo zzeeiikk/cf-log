@@ -2857,8 +2857,8 @@ function renderOnboarding() {
   function showCloudBetaSignup() {
     // Modal HTML erstellen
     const modalHTML = `
-      <div id="cloud-beta-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+      <div id="cloud-beta-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
           <div class="text-center">
             <!-- Cloud-Icon -->
             <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-purple-100 mb-6">
